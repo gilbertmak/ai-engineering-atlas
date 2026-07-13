@@ -1,10 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
-import { getTranscript } from "@/lib/transcript.functions";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
