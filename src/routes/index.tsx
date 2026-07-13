@@ -1,7 +1,94 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
+import { getTranscript } from "@/lib/transcript.functions";
+
+const SCROLL_KEY = "atlas:scroll-v1";
+
+function placeholderThumb(v: Video, token: string) {
+  // Deterministic SVG placeholder when the YouTube thumbnail is unavailable.
+  // Uses the track color and encodes speaker initials + video code so the
+  // card still communicates identity without a fetched image.
+  const initials = v.speaker
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  const color = getComputedStyle(document.documentElement).getPropertyValue(`--${token}`).trim() || "#1a1a2a";
+  const svg = `<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360' role='img'>
+  <defs>
+    <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0%' stop-color='${color}' stop-opacity='0.95'/>
+      <stop offset='100%' stop-color='#0f0f14' stop-opacity='0.95'/>
+    </linearGradient>
+    <pattern id='dots' width='16' height='16' patternUnits='userSpaceOnUse'>
+      <circle cx='1' cy='1' r='1' fill='#ffffff' fill-opacity='0.08'/>
+    </pattern>
+  </defs>
+  <rect width='640' height='360' fill='url(#g)'/>
+  <rect width='640' height='360' fill='url(#dots)'/>
+  <text x='40' y='90' font-family='ui-monospace, monospace' font-size='16' fill='#ffffff' fill-opacity='0.7' letter-spacing='4'>${v.code.toUpperCase()} · ${v.year}</text>
+  <text x='40' y='210' font-family='ui-serif, Georgia, serif' font-size='120' font-weight='700' fill='#ffffff'>${initials || "AI"}</text>
+  <text x='40' y='300' font-family='ui-sans-serif, system-ui' font-size='20' fill='#ffffff' fill-opacity='0.85'>${escapeXml(v.speaker)}</text>
+  <text x='40' y='328' font-family='ui-sans-serif, system-ui' font-size='14' fill='#ffffff' fill-opacity='0.6'>${escapeXml(v.track)}</text>
+</svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function escapeXml(s: string) {
+  return s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c] as string));
+}
+
+function Thumbnail({ video, token, eager }: { video: Video; token: string; eager: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const src = errored
+    ? placeholderThumb(video, token)
+    : `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted" aria-hidden />
+      )}
+      <img
+        src={src}
+        alt=""
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          if (!errored) {
+            setErrored(true);
+            setLoaded(true);
+          }
+        }}
+        className={
+          "h-full w-full object-cover transition-all duration-500 group-hover:scale-[1.03] " +
+          (loaded ? "opacity-100" : "opacity-0")
+        }
+      />
+    </>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)]">
+      <div className="aspect-video animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted" />
+      <div className="flex flex-col gap-3 p-4">
+        <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+        <div className="h-5 w-5/6 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="mt-2 h-3 w-full animate-pulse rounded bg-muted" />
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -89,6 +176,10 @@ function Dashboard() {
   const [year, setYear] = useState<"All" | number>("All");
   const [open, setOpen] = useState<Video | null>(null);
 
+  // Brief initial-load state so users see structure (skeletons) instead of a
+  // pop-in of fully-rendered cards. Also gives images a beat to warm up.
+  const [booting, setBooting] = useState(true);
+
   const years = useMemo(
     () => Array.from(new Set(VIDEOS.map((v) => v.year))).sort((a, b) => b - a),
     [],
@@ -109,19 +200,43 @@ function Dashboard() {
     });
   }, [query, track, year]);
 
-  // Progressive rendering: keep initial paint cheap by only mounting a page
-  // of cards at a time. Each card fetches a YouTube thumbnail, so mounting
-  // 40+ at once triggers 40+ image requests, layout work, and hover-state
-  // wiring on first paint. We render PAGE_SIZE and reveal more when a
-  // sentinel scrolls into view (IntersectionObserver — no scroll listeners).
   const PAGE_SIZE = 12;
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Restore visibleCount from sessionStorage so returning to the page keeps
+  // the same amount of content mounted — otherwise a scroll restore would
+  // land past the end of the rendered grid.
+  const [visibleCount, setVisibleCount] = useState<number>(() => {
+    if (typeof window === "undefined") return PAGE_SIZE;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { count?: number };
+        if (parsed.count && parsed.count > PAGE_SIZE) return parsed.count;
+      }
+    } catch {}
+    return PAGE_SIZE;
+  });
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const restoredScrollRef = useRef(false);
+
+  useEffect(() => {
+    // End the boot skeleton on the next frame after mount.
+    const id = requestAnimationFrame(() => setBooting(false));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Reset pagination whenever the filtered set changes so users always start
-  // from the top of the new result list.
+  // from the top of the new result list. Skip on the very first render so we
+  // don't stomp the restored visibleCount from sessionStorage.
+  const firstFilterRun = useRef(true);
   useEffect(() => {
+    if (firstFilterRun.current) {
+      firstFilterRun.current = false;
+      return;
+    }
     setVisibleCount(PAGE_SIZE);
+    // A new result set means the old scroll offset is meaningless.
+    sessionStorage.removeItem(SCROLL_KEY);
+    window.scrollTo({ top: 0 });
   }, [query, track, year]);
 
   const visible = useMemo(
@@ -140,11 +255,51 @@ function Dashboard() {
           setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
         }
       },
-      { rootMargin: "600px 0px" }, // preload just before the user reaches it
+      { rootMargin: "600px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [hasMore, filtered.length]);
+
+  // Persist scroll position (throttled via rAF) and restore once the grid has
+  // rendered enough cards to reach the saved offset.
+  useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        try {
+          sessionStorage.setItem(
+            SCROLL_KEY,
+            JSON.stringify({ y: window.scrollY, count: visibleCount }),
+          );
+        } catch {}
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [visibleCount]);
+
+  useEffect(() => {
+    if (restoredScrollRef.current || booting) return;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (!raw) {
+        restoredScrollRef.current = true;
+        return;
+      }
+      const { y } = JSON.parse(raw) as { y?: number };
+      if (typeof y === "number" && y > 0) {
+        // Wait a frame so the grid has painted before jumping.
+        requestAnimationFrame(() => window.scrollTo({ top: y }));
+      }
+      restoredScrollRef.current = true;
+    } catch {
+      restoredScrollRef.current = true;
+    }
+  }, [booting]);
 
   useEffect(() => {
     if (!open) return;
@@ -156,6 +311,7 @@ function Dashboard() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -304,76 +460,70 @@ function Dashboard() {
 
         {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((v, i) => {
-            const t = TRACKS.find((tr) => tr.name === v.track)!;
-            // Eager-load the first row (LCP candidates); lazy-load the rest so
-            // scrolling through 40+ cards doesn't fire 40+ image requests up front.
-            const eager = i < 3;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => setOpen(v)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
-              >
-                <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
-                  <img
-                    src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
-                    alt=""
-                    loading={eager ? "eager" : "lazy"}
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
-                    {v.duration}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <span>{v.code}</span>
-                    <span>{v.year}</span>
-                  </div>
-                  <h3 className="mt-2 font-display text-lg leading-tight">
-                    {v.title}
-                  </h3>
-                  <p className="mt-2 font-sans text-sm text-muted-foreground">
-                    {v.speaker} · {v.org}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
-                    <span
-                      className="inline-flex items-center gap-2"
-                      style={{ color: `var(--${t.token})` }}
-                    >
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ background: `var(--${t.token})` }}
-                      />
-                      {t.name}
-                    </span>
-                    <span className="text-ink group-hover:underline">
-                      Summary →
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+          {booting
+            ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
+            : visible.map((v, i) => {
+                const t = TRACKS.find((tr) => tr.name === v.track)!;
+                const eager = i < 3;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setOpen(v)}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
+                  >
+                    <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
+                      <Thumbnail video={v} token={t.token} eager={eager} />
+                      <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
+                        {v.duration}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        <span>{v.code}</span>
+                        <span>{v.year}</span>
+                      </div>
+                      <h3 className="mt-2 font-display text-lg leading-tight">
+                        {v.title}
+                      </h3>
+                      <p className="mt-2 font-sans text-sm text-muted-foreground">
+                        {v.speaker} · {v.org}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
+                        <span
+                          className="inline-flex items-center gap-2"
+                          style={{ color: `var(--${t.token})` }}
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ background: `var(--${t.token})` }}
+                          />
+                          {t.name}
+                        </span>
+                        <span className="text-ink group-hover:underline">
+                          Summary →
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+          {!booting && hasMore &&
+            Array.from({ length: Math.min(3, filtered.length - visibleCount) }).map((_, i) => (
+              <CardSkeleton key={`sk-more-${i}`} />
+            ))}
         </div>
 
         {/* Sentinel — IntersectionObserver reveals the next page when it
             approaches the viewport. When exhausted, shows an end marker. */}
-        {hasMore ? (
-          <div
-            ref={sentinelRef}
-            aria-hidden="true"
-            className="mt-10 flex justify-center pb-24"
-          >
+        {!booting && hasMore ? (
+          <div ref={sentinelRef} aria-hidden="true" className="mt-10 flex justify-center pb-24">
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               Loading more talks…
             </span>
           </div>
         ) : (
-          filtered.length > 0 && (
+          !booting && filtered.length > 0 && (
             <div className="mt-10 flex justify-center pb-24">
               <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                 End of atlas · {filtered.length} talks
@@ -381,6 +531,7 @@ function Dashboard() {
             </div>
           )
         )}
+
 
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
@@ -435,9 +586,79 @@ function TrackChip({
   );
 }
 
+function formatOffset(sec: number) {
+  const s = Math.max(0, Math.floor(sec));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+  const mm = String(m).padStart(2, "0");
+  const rs = String(ss).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${rs}` : `${m}:${rs}`;
+}
+
+function TranscriptPanel({ videoId }: { videoId: string }) {
+  const fetchFn = useServerFn(getTranscript);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["transcript", videoId],
+    queryFn: () => fetchFn({ data: { videoId } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2" aria-busy="true" aria-label="Loading transcript">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="h-4 w-12 shrink-0 animate-pulse rounded bg-muted" />
+            <div className="h-4 flex-1 animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.08 }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (isError || !data || data.source === "none" || data.segments.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-ink/30 p-4 font-sans text-sm text-muted-foreground">
+        Transcript unavailable for this video.{" "}
+        <a
+          href={`https://www.youtube.com/watch?v=${videoId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-ink"
+        >
+          Open on YouTube ↗
+        </a>
+        {data?.error && <div className="mt-2 font-mono text-[11px] opacity-60">{data.error}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-h-[420px] overflow-y-auto rounded-lg border border-ink/15 bg-card p-4">
+      <ol className="space-y-2">
+        {data.segments.map((seg, i) => (
+          <li key={i} className="flex gap-3 font-sans text-sm leading-relaxed">
+            <a
+              href={`https://www.youtube.com/watch?v=${videoId}&t=${Math.floor(seg.offset)}s`}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-ink"
+            >
+              {formatOffset(seg.offset)}
+            </a>
+            <span className="text-ink">{seg.text}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
   const t = TRACKS.find((tr) => tr.name === video.track)!;
   const s = TRACK_SUMMARIES[video.track];
+  const [showTranscript, setShowTranscript] = useState(false);
   return (
     <div
       role="dialog"
@@ -487,7 +708,6 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               className="absolute inset-0 h-full w-full"
             />
           </div>
-
         </div>
 
         {/* Sections */}
@@ -523,6 +743,9 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               }
             />
             <Row label="Caveat" body={<span className="text-[color:var(--track-5)]">{s.caveat}</span>} />
+            {showTranscript && (
+              <Row label="Transcript" body={<TranscriptPanel videoId={video.youtubeId} />} />
+            )}
           </div>
 
           {/* Sidebar */}
@@ -551,21 +774,21 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               <div className="font-sans text-sm">Code: {video.code}</div>
             </SideBlock>
 
-            <a
-              href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 flex items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] hover:-translate-y-[1px]"
+            <button
+              type="button"
+              onClick={() => setShowTranscript((v) => !v)}
+              className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
             >
-              Watch on YouTube
-              <span>↗</span>
-            </a>
+              {showTranscript ? "Hide Transcript" : "Read Transcript"}
+              <span>{showTranscript ? "↑" : "↓"}</span>
+            </button>
           </aside>
         </div>
       </div>
     </div>
   );
 }
+
 
 function Row({ label, body }: { label: string; body: React.ReactNode }) {
   return (
