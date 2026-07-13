@@ -21,42 +21,67 @@ export const Route = createFileRoute("/")({
 
 const TRACK_SUMMARIES: Record<Track, { claim: string; implication: string; whenToUse: string; caveat: string }> = {
   "System Design": {
-    claim: "Separate the agent execution loop from domain expertise so each can evolve without tightly coupling the other.",
-    implication: "Treat skills, tools, and orchestration primitives as versioned capability packages and keep the runtime deliberately small.",
-    whenToUse: "When one system must support many domains or teams without growing a monolithic prompt or runtime.",
-    caveat: "Composition adds coordination cost — start monolithic and split only when a boundary has proven itself.",
+    claim:
+      "The interesting design decision in an LLM system is not the model — it's the boundary between the agent's execution loop and the domain-specific expertise it draws on. Keep the loop small, generic, and inspectable; move the knowledge, tools, and policies into versioned skills you can review and swap independently. Systems that survive teams and model upgrades treat orchestration as infrastructure and expertise as content.",
+    implication:
+      "Treat every capability (a tool call, a retrieval strategy, a domain-specific playbook) as a first-class artifact with a version, an owner, an eval, and a rollback story. The runtime becomes thin — a scheduler for skills — and each skill can evolve, be A/B tested, or be retired without touching the surrounding system. This also makes on-call diagnosable: a regression maps to a specific skill version, not a monolithic prompt no one dares to change.",
+    whenToUse:
+      "Reach for this pattern once a single agent starts serving multiple domains, once more than one team contributes to prompts, or once you find yourself branching one giant system prompt on user attributes. It is also the right shape when compliance or safety reviewers need to sign off on capabilities in isolation rather than reading a 12-page monolithic prompt.",
+    caveat:
+      "Every abstraction has a coordination cost. Splitting too early creates ceremony without payoff — three skills owned by one engineer is just three files. Start monolithic, extract a skill only when a real seam has appeared (a second consumer, a distinct owner, a divergent eval), and be honest about which skills are load-bearing versus decorative.",
   },
   "Data & Eval": {
-    claim: "Evaluation is a product surface, not a notebook artifact — build it before you scale prompts, models, or agents.",
-    implication: "Treat eval datasets as living code: version them, review them, and gate every deploy on measurable behavior.",
-    whenToUse: "Whenever a change to a prompt, model, or retrieval pipeline can silently regress user-facing quality.",
-    caveat: "Bad evals give false confidence. Invest in dataset curation before chasing higher-fidelity scoring methods.",
+    claim:
+      "Evaluation is a product surface, not a notebook artifact. The talks that hold up in production frame evals the way backend engineers frame tests: they are the thing that lets you change the system safely. If you cannot measure a regression, you cannot ship an improvement — you can only ship vibes and hope the next user is generous.",
+    implication:
+      "Treat eval datasets as living code. Version them, review them in PRs, grow them from real production traces, and gate every deploy on a set of behaviors that matter to the business. Combine cheap heuristic checks with human-labeled slices and LLM-as-judge only where it has itself been calibrated against humans. The output is not a single accuracy number; it's a dashboard of behaviors you refuse to regress.",
+    whenToUse:
+      "Any time a change to a prompt, model, retrieval pipeline, or tool schema can silently degrade user-facing quality. That is essentially every change in an LLM system. Adopt evals before scaling traffic, before swapping models, and before letting more than one person edit the prompt — retrofitting evals under production pressure is where teams stall.",
+    caveat:
+      "Bad evals are worse than no evals: they encode false confidence. A benchmark that looks green while users churn is telling you your dataset is off, not that your system is good. Invest in dataset curation, labeled failure modes, and honest sampling from production before chasing more sophisticated scoring — an LLM judge on top of a shallow dataset just launders bad taste into a number.",
   },
   Reliability: {
-    claim: "Structure is cheaper than parsing — force the model into schemas the rest of your system can actually depend on.",
-    implication: "Wrap LLM calls in typed contracts, retries, and validators so downstream code never negotiates with free text.",
-    whenToUse: "When an LLM output feeds another program (tool call, database write, workflow step) rather than a human eye.",
-    caveat: "Over-constraining schemas can strangle useful model behavior — leave room for reasoning, not just fields.",
+    claim:
+      "Structure is cheaper than parsing. The moment an LLM output feeds another program, free text becomes a liability — you are one unlucky sampling away from a runtime exception, a corrupted row, or a silently wrong tool call. Force the model into schemas the rest of the system can depend on, and reliability stops being a prayer and starts being a property.",
+    implication:
+      "Wrap every LLM call in typed contracts, validators, and bounded retries. Use structured-output APIs where they exist, function/tool schemas where they don't, and a small validation + repair loop for the edges. Downstream code should never negotiate with the model — it should consume a validated object or fail closed with a legible error you can trace.",
+    whenToUse:
+      "Any path where an LLM decision drives a tool call, a database write, a workflow branch, or a UI component with fixed props. Also whenever you find yourself writing regex to extract fields out of a completion — that is the signal to move the constraint upstream into the model call itself.",
+    caveat:
+      "Over-constraining schemas can strangle useful reasoning. If every field is required and every enum is closed, the model will fabricate to satisfy the shape instead of surfacing uncertainty. Leave room for 'unknown', 'needs_human', and short free-text rationale fields — reliability is about predictable failure modes, not fake certainty.",
   },
   Observability: {
-    claim: "You cannot improve what you cannot see — traces, spans, and evals belong in the same pane as latency and cost.",
-    implication: "Instrument every LLM call with inputs, outputs, tool spans, and user feedback so regressions are debuggable.",
-    whenToUse: "As soon as a system leaves a single developer's laptop and starts serving real requests.",
-    caveat: "Logging raw prompts and completions creates a PII surface — redact and retention-cap before scaling.",
+    claim:
+      "You cannot improve what you cannot see, and in LLM systems 'see' means more than latency and error rate. Prompts, tool spans, retrieved chunks, model versions, user feedback, and eval scores all belong in the same pane as your existing SRE signals. Observability is the difference between debugging a regression in an afternoon and rewriting the prompt on a hunch at 2am.",
+    implication:
+      "Instrument every LLM call with the inputs, outputs, tool spans, model version, and user or automated feedback tied back to a trace ID. Feed those traces into your eval sets, your error triage, and your product analytics. When quality drops, you should be able to filter to the exact 200 traces that changed and diff them against last week.",
+    whenToUse:
+      "The moment a system leaves one developer's laptop and starts serving real requests — even internal traffic counts. Retrofitting tracing after an incident is expensive and lossy; the cheapest time to add it is before you need it, and the second-cheapest is right now.",
+    caveat:
+      "Logging raw prompts and completions creates a PII and IP surface that legal will care about eventually. Bake in redaction, per-tenant retention limits, and access controls from day one. An observability system that leaks user data is a bigger incident than the bug it was meant to help you find.",
   },
   "Safety & Control": {
-    claim: "Guardrails are a system property, not a model property — layer them at input, output, and action boundaries.",
-    implication: "Combine policy checks, red-team suites, and refusal audits with the same rigor as security tests.",
-    whenToUse: "Any deployment where the model can take actions, quote sources, or reach users you don't personally know.",
-    caveat: "Over-cautious guardrails erode trust and usefulness. Measure both false positives and missed harms.",
+    claim:
+      "Guardrails are a system property, not a model property. No single prompt, classifier, or fine-tune is going to make an agent safe on its own — safety comes from layered checks at the input, the output, and the action boundary, plus the humility to fail closed when any layer is uncertain. Treat it the way you treat security: defense in depth, assumed breach.",
+    implication:
+      "Combine policy checks, refusal audits, red-team suites, and human-in-the-loop escalation with the same rigor you apply to authz and secrets. Every high-impact action (payments, emails, deletions, external calls) should have an explicit allowlist, a rate limit, and a reversible path. Measure not only what you blocked but what you should have blocked and didn't.",
+    whenToUse:
+      "Any deployment where the model can take actions with real-world consequences, quote external sources users will trust, or reach users you don't personally know. That includes internal tools once they touch production data — 'it's just for the team' is where most incidents start.",
+    caveat:
+      "Over-cautious guardrails erode trust and usefulness faster than most teams admit. A model that refuses half of legitimate requests trains users to route around it, which is worse than a permissive system with good audit trails. Measure false positives and user friction alongside missed harms, and be willing to loosen when the data supports it.",
   },
   Deployment: {
-    claim: "Shipping an LLM feature is a latency, cost, and quality tradeoff — pick two explicitly and design for the third.",
-    implication: "Route requests across models by task, cache aggressively, and treat model choice as a runtime concern.",
-    whenToUse: "Once a prototype needs to serve real traffic under a budget and an SLA rather than a demo audience.",
-    caveat: "Premature multi-model routing hides bugs. Prove quality on one model before adding an escape hatch.",
+    claim:
+      "Shipping an LLM feature is a latency, cost, and quality tradeoff — pick two explicitly and design for the third. Every architectural choice, from model selection to caching to prompt length, is a move along that triangle. Teams that try to optimize all three at once end up with a system that is mediocre at all three and expensive to reason about.",
+    implication:
+      "Route requests across models by task, cache aggressively at the semantic layer, and treat model choice as a runtime concern behind a stable interface. Instrument p50/p95 latency and cost-per-request alongside quality metrics, and set explicit SLOs so tradeoffs are made deliberately rather than accidentally when the bill arrives.",
+    whenToUse:
+      "Once a prototype needs to serve real traffic under a budget and an SLA rather than a demo audience. The transition from 'it works in the notebook' to 'it works at 100 QPS at a price the business can absorb' is where most projects discover they built for the wrong point on the triangle.",
+    caveat:
+      "Premature multi-model routing hides bugs and makes evals harder — a regression in one model in one route can look like noise. Prove quality on a single model with clean traces first, then add routing as an escape hatch with its own tests. Complexity in the serving path should be earned, not assumed.",
   },
 };
+
 
 function Dashboard() {
   const [query, setQuery] = useState("");
