@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
-import { trackEvent, logClientError } from "@/lib/analytics";
+import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
@@ -204,28 +204,28 @@ function Dashboard() {
   }, [query, track, year]);
 
   const PAGE_SIZE = 12;
-  // Restore visibleCount from sessionStorage so returning to the page keeps
-  // the same amount of content mounted — otherwise a scroll restore would
-  // land past the end of the rendered grid.
-  const [visibleCount, setVisibleCount] = useState<number>(() => {
-    if (typeof window === "undefined") return PAGE_SIZE;
-    try {
-      const raw = sessionStorage.getItem(SCROLL_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { count?: number };
-        if (parsed.count && parsed.count > PAGE_SIZE) return parsed.count;
-      }
-    } catch {}
-    return PAGE_SIZE;
-  });
+  // Always start at PAGE_SIZE on both server and client to avoid a hydration
+  // mismatch — the restored value from sessionStorage is applied in the
+  // effect below, after hydration.
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const restoredScrollRef = useRef(false);
 
   useEffect(() => {
+    // Restore visibleCount (post-hydration) so returning to the page keeps
+    // the same amount of content mounted before we try to restore scroll.
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { count?: number };
+        if (parsed.count && parsed.count > PAGE_SIZE) setVisibleCount(parsed.count);
+      }
+    } catch {}
     // End the boot skeleton on the next frame after mount.
     const id = requestAnimationFrame(() => setBooting(false));
     return () => cancelAnimationFrame(id);
   }, []);
+
 
   // Reset pagination whenever the filtered set changes so users always start
   // from the top of the new result list. Skip on the very first render so we
@@ -306,12 +306,24 @@ function Dashboard() {
 
   useEffect(() => {
     if (!open) return;
+    trackEvent("modal_open", {
+      videoId: open.youtubeId,
+      code: open.code,
+      track: open.track,
+      speaker: open.speaker,
+    });
+    const openedAt = performance.now();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      trackEvent("modal_close", {
+        videoId: open.youtubeId,
+        code: open.code,
+        dwell_ms: Math.round(performance.now() - openedAt),
+      });
     };
   }, [open]);
 
@@ -547,9 +559,13 @@ function Dashboard() {
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <span>© Video Atlas · fixture edition</span>
-          <span>Built for engineers who ship on Tuesday</span>
+          <span className="flex items-center gap-4">
+            <a href="/analytics" className="hover:text-ink">Analytics debug</a>
+            <span>Built for engineers who ship on Tuesday</span>
+          </span>
         </div>
       </footer>
+
 
       {open && <SummaryModal video={open} onClose={() => setOpen(null)} />}
     </div>
@@ -591,23 +607,26 @@ function TrackChip({
 
 
 // Loads the YouTube IFrame API once so we can listen for caption state
-// changes on any embedded player.
+// changes on any embedded player. The first load is timed as a perf mark.
 let ytApiPromise: Promise<any> | null = null;
 function loadYouTubeApi(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("ssr"));
   const w = window as any;
   if (w.YT && w.YT.Player) return Promise.resolve(w.YT);
   if (ytApiPromise) return ytApiPromise;
+  const endMark = perfMark("yt_api_load");
   ytApiPromise = new Promise((resolve, reject) => {
     const prev = w.onYouTubeIframeAPIReady;
     w.onYouTubeIframeAPIReady = () => {
       prev?.();
+      endMark({ outcome: "ok" });
       resolve(w.YT);
     };
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
     s.async = true;
     s.onerror = (e) => {
+      endMark({ outcome: "error" });
       logClientError("youtube_api_load_failed", {}, e as any);
       reject(new Error("Failed to load YouTube IFrame API"));
     };
@@ -618,20 +637,37 @@ function loadYouTubeApi(): Promise<any> {
 
 function EmbeddedPlayer({ video }: { video: Video }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const captionsReported = useRef(false);
+  const captionsActive = useRef(false);
+  const captionsLang = useRef<string | null>(null);
+  const playReported = useRef(false);
+  const captionsProbeEnd = useRef<((extra?: Record<string, unknown>) => number) | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    captionsReported.current = false;
+    captionsActive.current = false;
+    captionsLang.current = null;
+    playReported.current = false;
     if (!iframeRef.current) return;
     let player: any;
     let cancelled = false;
+    const readyEnd = perfMark("player_ready", { videoId: video.youtubeId });
+    // Captions module loads asynchronously after playback starts. We start a
+    // timer at player-ready and close it the first time captions surface,
+    // giving us a "how long from playback to CC available" measurement.
+    captionsProbeEnd.current = perfMark("captions_probe", {
+      videoId: video.youtubeId,
+    });
+
     loadYouTubeApi()
       .then((YT) => {
         if (cancelled || !iframeRef.current) return;
         player = new YT.Player(iframeRef.current, {
           events: {
+            onReady: () => {
+              readyEnd({ outcome: "ok" });
+            },
             onError: (ev: any) => {
+              readyEnd({ outcome: "error", errorCode: ev?.data });
               logClientError("youtube_player_error", {
                 videoId: video.youtubeId,
                 code: video.code,
@@ -639,20 +675,55 @@ function EmbeddedPlayer({ video }: { video: Video }) {
               });
               setFailed(true);
             },
+            onStateChange: (ev: any) => {
+              // YT.PlayerState.PLAYING === 1
+              if (ev?.data === 1 && !playReported.current) {
+                playReported.current = true;
+                trackEvent("player_play", {
+                  videoId: video.youtubeId,
+                  code: video.code,
+                  track: video.track,
+                });
+              }
+            },
             onApiChange: () => {
               try {
-                // Captions module loads asynchronously after playback starts;
-                // read the active track — non-empty means CC is on.
                 const opt =
                   player.getOption?.("captions", "track") ??
                   player.getOption?.("cc", "track");
-                if (opt && Object.keys(opt).length > 0 && !captionsReported.current) {
-                  captionsReported.current = true;
+                const hasTrack = !!opt && Object.keys(opt).length > 0;
+                const lang = hasTrack ? ((opt as any).languageCode ?? null) : null;
+
+                if (hasTrack && !captionsActive.current) {
+                  captionsActive.current = true;
+                  captionsLang.current = lang;
+                  captionsProbeEnd.current?.({ outcome: "captions_available" });
+                  captionsProbeEnd.current = null;
                   trackEvent("captions_enabled", {
                     videoId: video.youtubeId,
                     code: video.code,
                     track: video.track,
-                    language: (opt as any).languageCode,
+                    language: lang,
+                    dedupe: video.youtubeId,
+                  });
+                } else if (!hasTrack && captionsActive.current) {
+                  // User toggled captions off.
+                  captionsActive.current = false;
+                  trackEvent("captions_disabled", {
+                    videoId: video.youtubeId,
+                    code: video.code,
+                    language: captionsLang.current,
+                    dedupe: video.youtubeId,
+                  });
+                  captionsLang.current = null;
+                } else if (hasTrack && lang && lang !== captionsLang.current) {
+                  // User switched caption language.
+                  const prevLang = captionsLang.current;
+                  captionsLang.current = lang;
+                  trackEvent("captions_language_changed", {
+                    videoId: video.youtubeId,
+                    from: prevLang,
+                    to: lang,
                   });
                 }
               } catch (err) {
@@ -662,9 +733,16 @@ function EmbeddedPlayer({ video }: { video: Video }) {
           },
         });
       })
-      .catch(() => setFailed(true));
+      .catch(() => {
+        readyEnd({ outcome: "api_load_failed" });
+        setFailed(true);
+      });
     return () => {
       cancelled = true;
+      // If captions never surfaced, close the probe with an outcome so the
+      // debug page shows how long we waited before teardown.
+      captionsProbeEnd.current?.({ outcome: "unmounted" });
+      captionsProbeEnd.current = null;
       try {
         player?.destroy?.();
       } catch {}
@@ -709,6 +787,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
     />
   );
 }
+
 
 
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
