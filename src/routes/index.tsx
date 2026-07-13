@@ -559,9 +559,13 @@ function Dashboard() {
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <span>© Video Atlas · fixture edition</span>
-          <span>Built for engineers who ship on Tuesday</span>
+          <span className="flex items-center gap-4">
+            <a href="/analytics" className="hover:text-ink">Analytics debug</a>
+            <span>Built for engineers who ship on Tuesday</span>
+          </span>
         </div>
       </footer>
+
 
       {open && <SummaryModal video={open} onClose={() => setOpen(null)} />}
     </div>
