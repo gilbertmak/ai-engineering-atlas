@@ -283,12 +283,6 @@ function Dashboard() {
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                  <span
-                    className="absolute left-3 top-3 rounded-md border border-ink bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-widest shadow-sm"
-                    style={{ color: `var(--${t.token})` }}
-                  >
-                    {t.code} · {v.track}
-                  </span>
                   <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
                     {v.duration}
                   </span>
