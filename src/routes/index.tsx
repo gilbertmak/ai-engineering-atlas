@@ -421,13 +421,17 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               {video.org} · {video.year} · {video.duration}
             </p>
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-ink/80 bg-ink shadow-inner">
-            <img
-              src={`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`}
-              alt=""
-              className="h-full w-full object-cover opacity-90"
+          <div className="relative aspect-video overflow-hidden rounded-xl border border-ink/80 bg-ink shadow-[0_20px_50px_-20px_rgba(20,20,40,0.55)]">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
+              title={video.title}
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full"
             />
           </div>
+
         </div>
 
         {/* Sections */}
