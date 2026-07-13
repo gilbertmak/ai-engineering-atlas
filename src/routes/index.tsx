@@ -677,9 +677,6 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               }
             />
             <Row label="Caveat" body={<span className="text-[color:var(--track-5)]">{s.caveat}</span>} />
-            {showTranscript && (
-              <Row label="Transcript" body={<TranscriptPanel videoId={video.youtubeId} />} />
-            )}
           </div>
 
           {/* Sidebar */}
