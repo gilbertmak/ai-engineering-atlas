@@ -61,6 +61,11 @@ function Thumbnail({ video, token, eager }: { video: Video; token: string; eager
         onLoad={() => setLoaded(true)}
         onError={() => {
           if (!errored) {
+            logClientError("thumbnail_failed", {
+              videoId: video.youtubeId,
+              code: video.code,
+              speaker: video.speaker,
+            });
             setErrored(true);
             setLoaded(true);
           }
