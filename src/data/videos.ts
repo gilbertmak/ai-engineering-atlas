@@ -1,0 +1,208 @@
+export type Track =
+  | "System Design"
+  | "Data & Eval"
+  | "Reliability"
+  | "Observability"
+  | "Safety & Control"
+  | "Deployment";
+
+export type Video = {
+  id: string;
+  code: string; // "01", "02"…
+  title: string;
+  speaker: string;
+  org: string;
+  track: Track;
+  year: number;
+  duration: string;
+  youtubeId: string; // real video id from AI Engineer channel
+};
+
+export const TRACKS: { code: string; name: Track; token: string }[] = [
+  { code: "01", name: "System Design", token: "track-1" },
+  { code: "02", name: "Data & Eval", token: "track-2" },
+  { code: "03", name: "Reliability", token: "track-3" },
+  { code: "04", name: "Observability", token: "track-4" },
+  { code: "05", name: "Safety & Control", token: "track-5" },
+  { code: "06", name: "Deployment", token: "track-6" },
+];
+
+// Curated real talks from the AI Engineer YouTube channel (@aiDotEngineer).
+export const VIDEOS: Video[] = [
+  {
+    id: "v01",
+    code: "aie-001",
+    title: "The Rise of the AI Engineer",
+    speaker: "Shawn @swyx Wang",
+    org: "Latent Space",
+    track: "System Design",
+    year: 2023,
+    duration: "22:41",
+    youtubeId: "eGVDKegRdgM",
+  },
+  {
+    id: "v02",
+    code: "aie-002",
+    title: "What We Learned from a Year of Building with LLMs",
+    speaker: "Hamel Husain",
+    org: "Independent",
+    track: "Data & Eval",
+    year: 2024,
+    duration: "31:12",
+    youtubeId: "c3b-JASoPi0",
+  },
+  {
+    id: "v03",
+    code: "aie-003",
+    title: "Pydantic is all you need",
+    speaker: "Jason Liu",
+    org: "Instructor",
+    track: "Reliability",
+    year: 2024,
+    duration: "18:07",
+    youtubeId: "yj-wSRJwrrc",
+  },
+  {
+    id: "v04",
+    code: "aie-004",
+    title: "Building Effective Agents",
+    speaker: "Barry Zhang",
+    org: "Anthropic",
+    track: "System Design",
+    year: 2025,
+    duration: "27:33",
+    youtubeId: "D7_ipDqhtwk",
+  },
+  {
+    id: "v05",
+    code: "aie-005",
+    title: "Evaluating LLM-based Applications",
+    speaker: "Josh Tobin",
+    org: "Gantry",
+    track: "Data & Eval",
+    year: 2023,
+    duration: "24:58",
+    youtubeId: "r-HUnht-Gns",
+  },
+  {
+    id: "v06",
+    code: "aie-006",
+    title: "Prompt Engineering Overview",
+    speaker: "Anthropic Team",
+    org: "Anthropic",
+    track: "Reliability",
+    year: 2024,
+    duration: "35:20",
+    youtubeId: "T9aRN5JkmL8",
+  },
+  {
+    id: "v07",
+    code: "aie-007",
+    title: "Observability for LLM Applications",
+    speaker: "Willem Pienaar",
+    org: "Arize",
+    track: "Observability",
+    year: 2024,
+    duration: "21:47",
+    youtubeId: "SnbGD677nu0",
+  },
+  {
+    id: "v08",
+    code: "aie-008",
+    title: "Beyond the Basics of Retrieval for Augmenting Generation",
+    speaker: "Ben Clavié",
+    org: "Answer.AI",
+    track: "Data & Eval",
+    year: 2024,
+    duration: "28:19",
+    youtubeId: "0nA5QG3087g",
+  },
+  {
+    id: "v09",
+    code: "aie-009",
+    title: "Building the AI Engineer Stack",
+    speaker: "Simon Willison",
+    org: "Datasette",
+    track: "Deployment",
+    year: 2024,
+    duration: "33:02",
+    youtubeId: "hFhOfAcNzYo",
+  },
+  {
+    id: "v10",
+    code: "aie-010",
+    title: "Guardrails for Production LLMs",
+    speaker: "Shreya Rajpal",
+    org: "Guardrails AI",
+    track: "Safety & Control",
+    year: 2024,
+    duration: "19:44",
+    youtubeId: "N6iN_hRc0DE",
+  },
+  {
+    id: "v11",
+    code: "aie-011",
+    title: "Multi-Agent Systems in Production",
+    speaker: "Harrison Chase",
+    org: "LangChain",
+    track: "System Design",
+    year: 2025,
+    duration: "26:11",
+    youtubeId: "4nZl32FwU-o",
+  },
+  {
+    id: "v12",
+    code: "aie-012",
+    title: "The State of Production RAG",
+    speaker: "Jerry Liu",
+    org: "LlamaIndex",
+    track: "Reliability",
+    year: 2024,
+    duration: "29:56",
+    youtubeId: "TRjq7t2Ms5I",
+  },
+  {
+    id: "v13",
+    code: "aie-013",
+    title: "Structured Outputs at Scale",
+    speaker: "Michelle Pokrass",
+    org: "OpenAI",
+    track: "Deployment",
+    year: 2024,
+    duration: "23:08",
+    youtubeId: "ATbkGP1DGMw",
+  },
+  {
+    id: "v14",
+    code: "aie-014",
+    title: "Continuous Evaluation Pipelines",
+    speaker: "Eugene Yan",
+    org: "Independent",
+    track: "Observability",
+    year: 2024,
+    duration: "25:41",
+    youtubeId: "eBVi_sLaYsc",
+  },
+  {
+    id: "v15",
+    code: "aie-015",
+    title: "Red-teaming LLM Applications",
+    speaker: "Ian Webster",
+    org: "Promptfoo",
+    track: "Safety & Control",
+    year: 2024,
+    duration: "17:52",
+    youtubeId: "1itPVV0f2Zk",
+  },
+  {
+    id: "v16",
+    code: "aie-016",
+    title: "Shipping Copilots: Latency, Cost, Quality",
+    speaker: "Logan Kilpatrick",
+    org: "Google DeepMind",
+    track: "Deployment",
+    year: 2025,
+    duration: "30:14",
+    youtubeId: "Xr1LtcT-Fjs",
+  },
+];
