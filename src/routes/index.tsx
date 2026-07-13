@@ -306,12 +306,24 @@ function Dashboard() {
 
   useEffect(() => {
     if (!open) return;
+    trackEvent("modal_open", {
+      videoId: open.youtubeId,
+      code: open.code,
+      track: open.track,
+      speaker: open.speaker,
+    });
+    const openedAt = performance.now();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      trackEvent("modal_close", {
+        videoId: open.youtubeId,
+        code: open.code,
+        dwell_ms: Math.round(performance.now() - openedAt),
+      });
     };
   }, [open]);
 
