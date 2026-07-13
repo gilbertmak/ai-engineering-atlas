@@ -41,7 +41,9 @@ function record(kind: LoggedEvent["kind"], event: string, props: EventProps) {
   for (const fn of listeners) {
     try {
       fn(entry);
-    } catch {}
+    } catch {
+      // A debug listener must never interrupt product analytics.
+    }
   }
   return entry;
 }
@@ -60,7 +62,9 @@ export function clearRecentEvents() {
   for (const fn of listeners) {
     try {
       fn({ id: nextId++, event: "__cleared__", props: {}, ts: Date.now(), kind: "event" });
-    } catch {}
+    } catch {
+      // A debug listener must never interrupt clearing the local buffer.
+    }
   }
 }
 
@@ -88,7 +92,9 @@ function flush() {
   try {
     const dl = (window.dataLayer ||= []);
     for (const item of batch) dl.push(item);
-  } catch {}
+  } catch {
+    // Analytics is best-effort when a host blocks access to dataLayer.
+  }
 }
 
 function throttleKey(event: string, props: EventProps): string | null {
@@ -136,15 +142,11 @@ export function trackEvent(event: string, props: EventProps = {}) {
   record("event", event, rest);
 }
 
-export function logClientError(
-  message: string,
-  context: EventProps = {},
-  error?: unknown,
-) {
+export function logClientError(message: string, context: EventProps = {}, error?: unknown) {
   if (typeof window === "undefined") return;
   if (shouldThrottle(`err:${message}`, context)) return;
   const err = error instanceof Error ? error : new Error(message);
-  // eslint-disable-next-line no-console
+
   console.error("[client-error]", message, { ...context, error });
   queue.push({ event: "client_error", message, ...context, ts: Date.now() });
   scheduleFlush();
@@ -156,17 +158,13 @@ export function logClientError(
 // finishes; it records a perf event with the measured duration in ms.
 export function perfMark(name: string, context: EventProps = {}) {
   const start =
-    typeof performance !== "undefined" && performance.now
-      ? performance.now()
-      : Date.now();
+    typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   let done = false;
   return (extra: EventProps = {}) => {
     if (done) return 0;
     done = true;
     const end =
-      typeof performance !== "undefined" && performance.now
-        ? performance.now()
-        : Date.now();
+      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
     const duration_ms = Math.round((end - start) * 100) / 100;
     const props = { ...context, ...extra, duration_ms };
     queue.push({ event: `perf:${name}`, ...props, ts: Date.now() });

@@ -1,0 +1,492 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-07-14T00:00:00+08:00",
+  "policy": "Retain only a reachable source that is the intended talk, based on exact speaker plus exact or clearly canonicalized title. Never substitute a merely related video. AI Engineer is preferred but exact external-channel sources are allowed.",
+  "summary": {
+    "input_records": 47,
+    "retain_current": 13,
+    "replace_source": 1,
+    "remove": 33,
+    "defensible_live_catalog": 14
+  },
+  "live_catalog": [
+    {
+      "id": "v03",
+      "code": "aie-003",
+      "disposition": "retain_current",
+      "youtube_id": "yj-wSRJwrrc",
+      "canonical_title": "Pydantic is all you need: Jason Liu",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2023-11-01T09:27:08-07:00",
+      "duration_seconds": 1075,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=yj-wSRJwrrc"
+    },
+    {
+      "id": "v04",
+      "code": "aie-004",
+      "disposition": "retain_current",
+      "youtube_id": "D7_ipDqhtwk",
+      "canonical_title": "How We Build Effective Agents: Barry Zhang, Anthropic",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-04-04T11:46:36-07:00",
+      "duration_seconds": 909,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=D7_ipDqhtwk"
+    },
+    {
+      "id": "v05",
+      "code": "aie-005",
+      "disposition": "retain_current",
+      "youtube_id": "r-HUnht-Gns",
+      "canonical_title": "Evaluating LLM-based Applications // Josh Tobin // LLMs in Prod Conference Part 2",
+      "canonical_channel": "MLOps.community",
+      "published_at": "2023-07-12T02:55:55-07:00",
+      "duration_seconds": 2990,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=r-HUnht-Gns"
+    },
+    {
+      "id": "v06",
+      "code": "aie-006",
+      "disposition": "retain_current_canonicalize_metadata",
+      "youtube_id": "T9aRN5JkmL8",
+      "canonical_title": "AI prompt engineering: A deep dive",
+      "canonical_channel": "Anthropic",
+      "published_at": "2024-09-05T10:00:19-07:00",
+      "duration_seconds": 4602,
+      "confidence": "medium",
+      "rationale": "The existing ID resolves to the official Anthropic prompt-engineering deep dive; the catalog's generic title and team attribution must be replaced by the canonical source metadata.",
+      "evidence_url": "https://www.youtube.com/watch?v=T9aRN5JkmL8"
+    },
+    {
+      "id": "v08",
+      "code": "aie-008",
+      "disposition": "retain_current",
+      "youtube_id": "0nA5QG3087g",
+      "canonical_title": "Beyond the Basics of Retrieval for Augmenting Generation (w/ Ben Clavié)",
+      "canonical_channel": "Hamel Husain",
+      "published_at": "2024-06-15T14:59:49-07:00",
+      "duration_seconds": 2925,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=0nA5QG3087g"
+    },
+    {
+      "id": "v12",
+      "code": "aie-012",
+      "disposition": "retain_current_canonicalize_metadata",
+      "youtube_id": "TRjq7t2Ms5I",
+      "canonical_title": "Building Production-Ready RAG Applications: Jerry Liu",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2023-11-15T11:46:23-08:00",
+      "duration_seconds": 1114,
+      "confidence": "high",
+      "rationale": "Same Jerry Liu/LlamaIndex production-RAG talk on the preferred AI Engineer channel; use the source's canonical title and date.",
+      "evidence_url": "https://www.youtube.com/watch?v=TRjq7t2Ms5I"
+    },
+    {
+      "id": "v17",
+      "code": "aie-017",
+      "disposition": "retain_current",
+      "youtube_id": "kPL-6-9MVyA",
+      "canonical_title": "RAG Agents in Prod: 10 Lessons We Learned — Douwe Kiela, creator of RAG",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-04-10T12:47:37-07:00",
+      "duration_seconds": 1016,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=kPL-6-9MVyA"
+    },
+    {
+      "id": "v18",
+      "code": "aie-018",
+      "disposition": "retain_current",
+      "youtube_id": "d5EltXhbcfA",
+      "canonical_title": "Building and evaluating AI Agents — Sayash Kapoor, AI Snake Oil",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-04-17T09:00:06-07:00",
+      "duration_seconds": 1199,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=d5EltXhbcfA"
+    },
+    {
+      "id": "v19",
+      "code": "aie-019",
+      "disposition": "retain_current",
+      "youtube_id": "-rsTkYgnNzM",
+      "canonical_title": "Rethinking how we Scaffold AI Agents - Rahul Sengottuvelu, Ramp",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-03-19T10:09:54-07:00",
+      "duration_seconds": 992,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=-rsTkYgnNzM"
+    },
+    {
+      "id": "v20",
+      "code": "aie-020",
+      "disposition": "retain_current",
+      "youtube_id": "nbZzSC5A6hs",
+      "canonical_title": "Lessons from the Trenches: Building LLM Evals That Work IRL: Aparna Dhinkaran",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-02-06T01:24:01-08:00",
+      "duration_seconds": 1129,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=nbZzSC5A6hs"
+    },
+    {
+      "id": "v21",
+      "code": "aie-021",
+      "disposition": "retain_current",
+      "youtube_id": "SKDJo2CopRs",
+      "canonical_title": "Why Eval++ Is the Next Great Compute Primitive — Sunil Pai & Matt Carey, Cloudflare",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2026-06-08T06:00:13-07:00",
+      "duration_seconds": 1490,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=SKDJo2CopRs"
+    },
+    {
+      "id": "v22",
+      "code": "aie-022",
+      "disposition": "retain_current",
+      "youtube_id": "CEvIs9y1uog",
+      "canonical_title": "Don't Build Agents, Build Skills Instead – Barry Zhang & Mahesh Murag, Anthropic",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2025-12-08T09:30:06-08:00",
+      "duration_seconds": 982,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=CEvIs9y1uog"
+    },
+    {
+      "id": "v23",
+      "code": "aie-023",
+      "disposition": "retain_current",
+      "youtube_id": "yUmS-F9IX90",
+      "canonical_title": "Don't Build Slop (4 Levels of AI Agent Maturity) - Ara Khan, Cline",
+      "canonical_channel": "AI Engineer",
+      "published_at": "2026-05-19T08:00:06-07:00",
+      "duration_seconds": 1131,
+      "confidence": "high",
+      "evidence_url": "https://www.youtube.com/watch?v=yUmS-F9IX90"
+    },
+    {
+      "id": "v24",
+      "code": "aie-024",
+      "disposition": "replace_source",
+      "original_youtube_id": "tsJx-CBUUms",
+      "youtube_id": "7wwWRph3Jls",
+      "canonical_title": "Agent Engineering with Pydantic + Graphs — with Samuel Colvin, CEO of Pydantic Logfire",
+      "canonical_channel": "Latent Space",
+      "published_at": "2025-02-06T14:58:45-08:00",
+      "duration_seconds": 3735,
+      "confidence": "high",
+      "rationale": "Exact title and speaker replacement; the original ID returns 404.",
+      "evidence_url": "https://www.youtube.com/watch?v=7wwWRph3Jls",
+      "publisher_page": "https://www.latent.space/p/pydantic/"
+    }
+  ],
+  "remove_records": [
+    {
+      "id": "v01",
+      "code": "aie-001",
+      "catalog_title": "The Rise of the AI Engineer",
+      "catalog_speaker": "Shawn @swyx Wang",
+      "original_youtube_id": "eGVDKegRdgM",
+      "reason": "reachable_wrong_video",
+      "observed_title": "Scaling Up “Vibe Checks” for LLMs - Shreya Shankar | Stanford MLSys #97",
+      "observed_channel": "Stanford MLSys Seminars",
+      "observed_published_at": "2024-04-25T02:43:14-07:00"
+    },
+    {
+      "id": "v02",
+      "code": "aie-002",
+      "catalog_title": "What We Learned from a Year of Building with LLMs",
+      "catalog_speaker": "Hamel Husain",
+      "original_youtube_id": "c3b-JASoPi0",
+      "reason": "reachable_wrong_video",
+      "observed_title": "Making AI accessible with Andrej Karpathy and Stephanie Zhan",
+      "observed_channel": "Sequoia Capital",
+      "observed_published_at": "2024-03-26T14:18:23-07:00"
+    },
+    {
+      "id": "v07",
+      "code": "aie-007",
+      "catalog_title": "Observability for LLM Applications",
+      "catalog_speaker": "Willem Pienaar",
+      "original_youtube_id": "SnbGD677nu0",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v09",
+      "code": "aie-009",
+      "catalog_title": "Building the AI Engineer Stack",
+      "catalog_speaker": "Simon Willison",
+      "original_youtube_id": "hFhOfAcNzYo",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v10",
+      "code": "aie-010",
+      "catalog_title": "Guardrails for Production LLMs",
+      "catalog_speaker": "Shreya Rajpal",
+      "original_youtube_id": "N6iN_hRc0DE",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v11",
+      "code": "aie-011",
+      "catalog_title": "Multi-Agent Systems in Production",
+      "catalog_speaker": "Harrison Chase",
+      "original_youtube_id": "4nZl32FwU-o",
+      "reason": "reachable_related_not_exact",
+      "observed_title": "Conceptual Guide: Multi Agent Architectures",
+      "observed_channel": "LangChain",
+      "observed_published_at": "2024-10-16T10:29:51-07:00"
+    },
+    {
+      "id": "v13",
+      "code": "aie-013",
+      "catalog_title": "Structured Outputs at Scale",
+      "catalog_speaker": "Michelle Pokrass",
+      "original_youtube_id": "ATbkGP1DGMw",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v14",
+      "code": "aie-014",
+      "catalog_title": "Continuous Evaluation Pipelines",
+      "catalog_speaker": "Eugene Yan",
+      "original_youtube_id": "eBVi_sLaYsc",
+      "reason": "reachable_wrong_video",
+      "observed_title": "Why Vertical LLM Agents Are The New $1 Billion SaaS Opportunities",
+      "observed_channel": "Y Combinator",
+      "observed_published_at": "2024-10-04T07:00:41-07:00"
+    },
+    {
+      "id": "v15",
+      "code": "aie-015",
+      "catalog_title": "Red-teaming LLM Applications",
+      "catalog_speaker": "Ian Webster",
+      "original_youtube_id": "1itPVV0f2Zk",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v16",
+      "code": "aie-016",
+      "catalog_title": "Shipping Copilots: Latency, Cost, Quality",
+      "catalog_speaker": "Logan Kilpatrick",
+      "original_youtube_id": "Xr1LtcT-Fjs",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v25",
+      "code": "aie-025",
+      "catalog_title": "The New Skills of the AI Engineer",
+      "catalog_speaker": "Shawn @swyx Wang",
+      "original_youtube_id": "6Uf6DKancpg",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v26",
+      "code": "aie-026",
+      "catalog_title": "How to Build an Agent",
+      "catalog_speaker": "Thorsten Ball",
+      "original_youtube_id": "J1-W9O3n7j8",
+      "reason": "reachable_related_not_exact",
+      "observed_title": "Agents At Work 4: the future of coding with Thorsten Ball",
+      "observed_channel": "Agents At Work",
+      "observed_published_at": "2025-02-27T08:40:56-08:00"
+    },
+    {
+      "id": "v27",
+      "code": "aie-027",
+      "catalog_title": "Beyond Prompt Engineering: Context Engineering",
+      "catalog_speaker": "Walden Yan",
+      "original_youtube_id": "IS_y40zY-hc",
+      "reason": "reachable_related_not_exact",
+      "observed_title": "Advanced Context Engineering for Agents",
+      "observed_channel": "YC Root Access",
+      "observed_published_at": "2025-08-25T09:10:09-07:00"
+    },
+    {
+      "id": "v28",
+      "code": "aie-028",
+      "catalog_title": "Building an AI IDE: The Cursor Story",
+      "catalog_speaker": "Aman Sanger",
+      "original_youtube_id": "oFfVt3S51T4",
+      "reason": "reachable_wrong_video",
+      "observed_title": "Cursor Team: Future of Programming with AI | Lex Fridman Podcast #447",
+      "observed_channel": "Lex Fridman",
+      "observed_published_at": "2024-10-06T11:43:14-07:00"
+    },
+    {
+      "id": "v29",
+      "code": "aie-029",
+      "catalog_title": "Scaling AI Agents at Replit",
+      "catalog_speaker": "Michele Catasta",
+      "original_youtube_id": "MDlYd8QW6yA",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v30",
+      "code": "aie-030",
+      "catalog_title": "Voice Agents in Production",
+      "catalog_speaker": "Russ d'Sa",
+      "original_youtube_id": "cM8ChSbF4c8",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v31",
+      "code": "aie-031",
+      "catalog_title": "The Model Context Protocol",
+      "catalog_speaker": "David Soria Parra",
+      "original_youtube_id": "kQmXtrmQ5Zg",
+      "reason": "reachable_wrong_speaker",
+      "observed_title": "Building Agents with Model Context Protocol - Full Workshop with Mahesh Murag of Anthropic",
+      "observed_channel": "AI Engineer",
+      "observed_published_at": "2025-03-01T08:59:35-08:00"
+    },
+    {
+      "id": "v32",
+      "code": "aie-032",
+      "catalog_title": "Fine-tuning Small Models That Beat GPT-4",
+      "catalog_speaker": "Kyle Corbitt",
+      "original_youtube_id": "zM2rudMhVXk",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v33",
+      "code": "aie-033",
+      "catalog_title": "Prompt Caching and Cost-Optimized Agents",
+      "catalog_speaker": "Alex Albert",
+      "original_youtube_id": "8x3s3wJoQvI",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v34",
+      "code": "aie-034",
+      "catalog_title": "Reasoning Models in Practice",
+      "catalog_speaker": "Nathan Lambert",
+      "original_youtube_id": "H2xWjMcQxk4",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v35",
+      "code": "aie-035",
+      "catalog_title": "Vector Databases in 2025: What Actually Matters",
+      "catalog_speaker": "Bob van Luijt",
+      "original_youtube_id": "Y4rXKgClKl8",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v36",
+      "code": "aie-036",
+      "catalog_title": "LLM-as-Judge: When It Works and When It Doesn't",
+      "catalog_speaker": "Shreya Shankar",
+      "original_youtube_id": "eLXF0VojuSs",
+      "reason": "reachable_wrong_video",
+      "observed_title": "How to Construct Domain Specific LLM Evaluation Systems: Hamel Husain and Emil Sedgh",
+      "observed_channel": "AI Engineer",
+      "observed_published_at": "2024-09-19T09:47:24-07:00"
+    },
+    {
+      "id": "v37",
+      "code": "aie-037",
+      "catalog_title": "Traces, Spans, and Session Replay for Agents",
+      "catalog_speaker": "Boris Cherny",
+      "original_youtube_id": "sQ6EtA0Gd6E",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v38",
+      "code": "aie-038",
+      "catalog_title": "Adversarial Testing for LLM Products",
+      "catalog_speaker": "Leonard Tang",
+      "original_youtube_id": "aG6RfL2kwXo",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v39",
+      "code": "aie-039",
+      "catalog_title": "Building Copilots that Users Actually Trust",
+      "catalog_speaker": "Amjad Masad",
+      "original_youtube_id": "5rZ1o5Yh1qE",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v40",
+      "code": "aie-040",
+      "catalog_title": "The Anatomy of a Long-Running Agent",
+      "catalog_speaker": "Kanjun Qiu",
+      "original_youtube_id": "V8vP9r7wnCw",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v41",
+      "code": "aie-041",
+      "catalog_title": "GraphRAG in Production",
+      "catalog_speaker": "Emil Eifrem",
+      "original_youtube_id": "r09tJfON6kE",
+      "reason": "reachable_wrong_video",
+      "observed_title": "GraphRAG: LLM-Derived Knowledge Graphs for RAG",
+      "observed_channel": "Alex Chao",
+      "observed_published_at": "2024-05-04T08:41:03-07:00"
+    },
+    {
+      "id": "v42",
+      "code": "aie-042",
+      "catalog_title": "Cost Governance for AI Platforms",
+      "catalog_speaker": "Dedy Kredo",
+      "original_youtube_id": "6M2fUv3YrhE",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v43",
+      "code": "aie-043",
+      "catalog_title": "Alignment Techniques That Ship",
+      "catalog_speaker": "Jan Leike",
+      "original_youtube_id": "F9F3H3xkyRs",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v44",
+      "code": "aie-044",
+      "catalog_title": "Streaming UIs for Generative Interfaces",
+      "catalog_speaker": "Guillermo Rauch",
+      "original_youtube_id": "vzGZ0nJn6bA",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v45",
+      "code": "aie-045",
+      "catalog_title": "The Data Flywheel Behind Great Agents",
+      "catalog_speaker": "Chip Huyen",
+      "original_youtube_id": "kxT8-C1vmd4",
+      "reason": "reachable_wrong_video",
+      "observed_title": "Zig in 100 Seconds",
+      "observed_channel": "Fireship",
+      "observed_published_at": "2023-08-03T07:42:10-07:00"
+    },
+    {
+      "id": "v46",
+      "code": "aie-046",
+      "catalog_title": "Latency Budgets for Real-time AI",
+      "catalog_speaker": "Sarah Guo",
+      "original_youtube_id": "5Xn4c9L2FMs",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    },
+    {
+      "id": "v47",
+      "code": "aie-047",
+      "catalog_title": "From Prompt to Product: Lessons from 200 Deployments",
+      "catalog_speaker": "Linus Lee",
+      "original_youtube_id": "vDaEo83nJ4Q",
+      "reason": "youtube_oembed_404_no_exact_replacement_found"
+    }
+  ],
+  "validation": {
+    "reachability": "YouTube oEmbed HTTP response checked for all 47 original IDs; canonical oEmbed title/channel captured for every 200 response.",
+    "date_and_duration": "YouTube watch-page structured metadata checked for every reachable candidate; publishDate/uploadDate and lengthSeconds captured.",
+    "replacement_search": "Exact catalog title plus speaker web searches were run for unavailable or mismatched records. Only v24 produced an exact, confidently attributable replacement.",
+    "known_gap": "YouTube search indexing is not exhaustive; removed records may have sources that were private, unlisted, renamed beyond confident matching, or newly published after this audit. Re-admit only after exact manual verification."
+  }
+}

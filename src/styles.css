@@ -61,12 +61,12 @@
   --destructive-foreground: oklch(0.98 0.012 90);
 
   /* six track colors from the hero image */
-  --track-1: oklch(0.5 0.24 275);   /* violet - system design */
-  --track-2: oklch(0.78 0.19 125);  /* lime - data & eval */
-  --track-3: oklch(0.72 0.14 220);  /* cyan - reliability */
-  --track-4: oklch(0.7 0.19 45);    /* orange - observability */
-  --track-5: oklch(0.68 0.17 15);   /* pink/red - safety */
-  --track-6: oklch(0.5 0.22 265);   /* blue - deployment */
+  --track-1: oklch(0.5 0.24 275); /* violet - system design */
+  --track-2: oklch(0.78 0.19 125); /* lime - data & eval */
+  --track-3: oklch(0.72 0.14 220); /* cyan - reliability */
+  --track-4: oklch(0.7 0.19 45); /* orange - observability */
+  --track-5: oklch(0.68 0.17 15); /* pink/red - safety */
+  --track-6: oklch(0.5 0.22 265); /* blue - deployment */
 }
 
 @layer base {
@@ -74,7 +74,8 @@
     border-color: var(--color-border);
   }
 
-  html, body {
+  html,
+  body {
     background-color: var(--color-paper);
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -82,12 +83,16 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
 
-  .font-mono, kbd, code {
+  .font-mono,
+  kbd,
+  code {
     font-family: var(--font-mono);
   }
 }
@@ -110,5 +115,15 @@
   height: 10px;
   border: 1px solid var(--line);
 }
-.crosshair::before { top: -5px; left: -5px; border-right: 0; border-bottom: 0; }
-.crosshair::after { bottom: -5px; right: -5px; border-left: 0; border-top: 0; }
+.crosshair::before {
+  top: -5px;
+  left: -5px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.crosshair::after {
+  bottom: -5px;
+  right: -5px;
+  border-left: 0;
+  border-top: 0;
+}
