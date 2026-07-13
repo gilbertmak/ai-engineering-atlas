@@ -1,10 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
-import { getTranscript } from "@/lib/transcript.functions";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
@@ -586,97 +583,13 @@ function TrackChip({
   );
 }
 
-function formatOffset(sec: number) {
-  const s = Math.max(0, Math.floor(sec));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const ss = s % 60;
-  const mm = String(m).padStart(2, "0");
-  const rs = String(ss).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${rs}` : `${m}:${rs}`;
-}
 
-function TranscriptPanel({ videoId }: { videoId: string }) {
-  const fetchFn = useServerFn(getTranscript);
-  const { data, isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: ["transcript", videoId],
-    queryFn: () => fetchFn({ data: { videoId } }),
-    staleTime: 1000 * 60 * 60 * 24,
-    gcTime: 1000 * 60 * 60 * 24,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2" aria-busy="true" aria-label="Loading transcript">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex gap-3">
-            <div className="h-4 w-12 shrink-0 animate-pulse rounded bg-muted" />
-            <div className="h-4 flex-1 animate-pulse rounded bg-muted" style={{ opacity: 1 - i * 0.08 }} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (isError || !data || data.source === "none" || data.segments.length === 0) {
-    const rateLimited = /captcha|too many|unusual/i.test(data?.error ?? "");
-    return (
-      <div className="rounded-lg border border-dashed border-ink/30 p-4 font-sans text-sm text-muted-foreground">
-        <div>
-          {rateLimited
-            ? "YouTube is temporarily rate-limiting transcript fetches from this server. Try again in a moment, or open the video directly."
-            : "Transcript unavailable for this video."}
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="rounded-full border border-ink/30 px-3 py-1 text-xs uppercase tracking-wider hover:bg-ink hover:text-background disabled:opacity-50"
-          >
-            {isFetching ? "Retrying…" : "Retry"}
-          </button>
-          <a
-            href={`https://www.youtube.com/watch?v=${videoId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-ink"
-          >
-            Open on YouTube ↗
-          </a>
-        </div>
-        {data?.error && <div className="mt-2 font-mono text-[11px] opacity-60">{data.error}</div>}
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-h-[420px] overflow-y-auto rounded-lg border border-ink/15 bg-card p-4">
-      <ol className="space-y-2">
-        {data.segments.map((seg, i) => (
-          <li key={i} className="flex gap-3 font-sans text-sm leading-relaxed">
-            <a
-              href={`https://www.youtube.com/watch?v=${videoId}&t=${Math.floor(seg.offset)}s`}
-              target="_blank"
-              rel="noreferrer"
-              className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-ink"
-            >
-              {formatOffset(seg.offset)}
-            </a>
-            <span className="text-ink">{seg.text}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
 
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
   const t = TRACKS.find((tr) => tr.name === video.track)!;
   const s = TRACK_SUMMARIES[video.track];
-  const [showTranscript, setShowTranscript] = useState(false);
+  
   return (
     <div
       role="dialog"
@@ -761,9 +674,6 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               }
             />
             <Row label="Caveat" body={<span className="text-[color:var(--track-5)]">{s.caveat}</span>} />
-            {showTranscript && (
-              <Row label="Transcript" body={<TranscriptPanel videoId={video.youtubeId} />} />
-            )}
           </div>
 
           {/* Sidebar */}
@@ -792,14 +702,15 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               <div className="font-sans text-sm">Code: {video.code}</div>
             </SideBlock>
 
-            <button
-              type="button"
-              onClick={() => setShowTranscript((v) => !v)}
+            <a
+              href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+              target="_blank"
+              rel="noreferrer"
               className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
             >
-              {showTranscript ? "Hide Transcript" : "Read Transcript"}
-              <span>{showTranscript ? "↑" : "↓"}</span>
-            </button>
+              Open on YouTube
+              <span>↗</span>
+            </a>
           </aside>
         </div>
       </div>
