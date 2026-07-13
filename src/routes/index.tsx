@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
 
