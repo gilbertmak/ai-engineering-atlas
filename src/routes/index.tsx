@@ -1,22 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useRef, useState } from "react";
-import heroAsset from "@/assets/hero-atlas.png.asset.json";
-import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
+import {
+  SOURCE_CATALOG_VERIFIED_AT,
+  TRACKS,
+  VIDEOS,
+  videoDuration,
+  videoPublishedDate,
+  videoYear,
+  type Track,
+  type Video,
+} from "@/data/videos";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
 function placeholderThumb(v: Video, token: string) {
   // Deterministic SVG placeholder when the YouTube thumbnail is unavailable.
-  // Uses the track color and encodes speaker initials + video code so the
+  // Uses the track color and encodes channel initials + video code so the
   // card still communicates identity without a fetched image.
-  const initials = v.speaker
+  const initials = v.sourceChannel
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
-  const color = getComputedStyle(document.documentElement).getPropertyValue(`--${token}`).trim() || "#1a1a2a";
+  const color =
+    getComputedStyle(document.documentElement).getPropertyValue(`--${token}`).trim() || "#1a1a2a";
   const svg = `<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360' role='img'>
   <defs>
@@ -30,16 +40,19 @@ function placeholderThumb(v: Video, token: string) {
   </defs>
   <rect width='640' height='360' fill='url(#g)'/>
   <rect width='640' height='360' fill='url(#dots)'/>
-  <text x='40' y='90' font-family='ui-monospace, monospace' font-size='16' fill='#ffffff' fill-opacity='0.7' letter-spacing='4'>${v.code.toUpperCase()} · ${v.year}</text>
+  <text x='40' y='90' font-family='ui-monospace, monospace' font-size='16' fill='#ffffff' fill-opacity='0.7' letter-spacing='4'>${v.code.toUpperCase()} · ${videoYear(v)}</text>
   <text x='40' y='210' font-family='ui-serif, Georgia, serif' font-size='120' font-weight='700' fill='#ffffff'>${initials || "AI"}</text>
-  <text x='40' y='300' font-family='ui-sans-serif, system-ui' font-size='20' fill='#ffffff' fill-opacity='0.85'>${escapeXml(v.speaker)}</text>
+  <text x='40' y='300' font-family='ui-sans-serif, system-ui' font-size='20' fill='#ffffff' fill-opacity='0.85'>${escapeXml(v.sourceChannel)}</text>
   <text x='40' y='328' font-family='ui-sans-serif, system-ui' font-size='14' fill='#ffffff' fill-opacity='0.6'>${escapeXml(v.track)}</text>
 </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 function escapeXml(s: string) {
-  return s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c] as string));
+  return s.replace(
+    /[<>&'"]/g,
+    (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c] as string,
+  );
 }
 
 function Thumbnail({ video, token, eager }: { video: Video; token: string; eager: boolean }) {
@@ -51,7 +64,10 @@ function Thumbnail({ video, token, eager }: { video: Video; token: string; eager
   return (
     <>
       {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted" aria-hidden />
+        <div
+          className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted"
+          aria-hidden
+        />
       )}
       <img
         src={src}
@@ -64,14 +80,14 @@ function Thumbnail({ video, token, eager }: { video: Video; token: string; eager
             logClientError("thumbnail_failed", {
               videoId: video.youtubeId,
               code: video.code,
-              speaker: video.speaker,
+              sourceChannel: video.sourceChannel,
             });
             setErrored(true);
             setLoaded(true);
           }
         }}
         className={
-          "h-full w-full object-cover transition-all duration-500 group-hover:scale-[1.03] " +
+          "h-full w-full object-cover transition-all duration-500 motion-safe:group-hover:scale-[1.03] motion-reduce:transition-none " +
           (loaded ? "opacity-100" : "opacity-0")
         }
       />
@@ -98,18 +114,23 @@ export const Route = createFileRoute("/")({
     meta: [
       {
         property: "og:image",
-        content: `https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app${heroAsset.url}`,
+        content:
+          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
       },
       {
         name: "twitter:image",
-        content: `https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app${heroAsset.url}`,
+        content:
+          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
       },
     ],
   }),
   component: Dashboard,
 });
 
-const TRACK_SUMMARIES: Record<Track, { claim: string; implication: string; whenToUse: string; caveat: string }> = {
+const TRACK_SUMMARIES: Record<
+  Track,
+  { claim: string; implication: string; whenToUse: string; caveat: string }
+> = {
   "System Design": {
     claim:
       "The interesting design decision in an LLM system is not the model — it's the boundary between the agent's execution loop and the domain-specific expertise it draws on. Keep the loop small, generic, and inspectable; move the knowledge, tools, and policies into versioned skills you can review and swap independently. Systems that survive teams and model upgrades treat orchestration as infrastructure and expertise as content.",
@@ -172,32 +193,119 @@ const TRACK_SUMMARIES: Record<Track, { claim: string; implication: string; whenT
   },
 };
 
+type IllustrativeExample = {
+  situation: string;
+  application: string;
+  observableOutcome: string;
+};
+
+type ContentBasis = "track_synthesis" | "transcript_backed";
+
+type TalkInsight = {
+  claim: string;
+  implication: string;
+  whenToUse: string;
+  caveat: string;
+  example: IllustrativeExample;
+  contentBasis: ContentBasis;
+  timestampSeconds: number | null;
+  reviewedAt: string | null;
+};
+
+const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
+  "System Design": {
+    situation:
+      "An incident-response agent has accumulated one large prompt that mixes orchestration, tool instructions, and team policy.",
+    application:
+      "Keep the execution loop stable, then extract the incident playbook into a versioned skill with its own owner and eval set.",
+    observableOutcome:
+      "A regression can be traced to one skill version and rolled back without replacing the surrounding runtime.",
+  },
+  "Data & Eval": {
+    situation:
+      "A prompt revision looks better in a demo, but the team cannot tell whether it regresses difficult production cases.",
+    application:
+      "Build a reviewed golden set from real failure modes and make it a deployment gate alongside deterministic checks.",
+    observableOutcome:
+      "The release shows which behaviors improved, which regressed, and which slices still need human review.",
+  },
+  Reliability: {
+    situation:
+      "A support workflow parses free-text model output before issuing refunds, and malformed fields occasionally reach downstream code.",
+    application:
+      "Move the contract upstream into a typed schema, validate every response, and fail closed after bounded repair attempts.",
+    observableOutcome:
+      "Schema failures become measurable events instead of silent data corruption or unpredictable tool calls.",
+  },
+  Observability: {
+    situation:
+      "An agent fails intermittently, but logs contain only the user prompt and final answer.",
+    application:
+      "Capture the model version, retrieved context, decisions, tool spans, and state transitions under one trace identifier.",
+    observableOutcome:
+      "Engineers can replay the failing path and isolate the changed input, tool response, or model behavior.",
+  },
+  "Safety & Control": {
+    situation:
+      "An agent can prepare and execute a high-value transfer through the same unrestricted tool path.",
+    application:
+      "Separate proposal from execution and gate the action with identity, policy, amount, and explicit approval checks.",
+    observableOutcome:
+      "The useful proposal is preserved while consequential execution remains reviewable, reversible, and auditable.",
+  },
+  Deployment: {
+    situation:
+      "A production assistant meets quality targets but misses its latency and cost budgets during peak traffic.",
+    application:
+      "Set explicit service-level objectives, measure cost per successful task, and route only proven task classes to smaller models.",
+    observableOutcome:
+      "Quality, p95 latency, and cost tradeoffs become visible before routing complexity is expanded.",
+  },
+};
+
+// Populate only after a talk has been reviewed against a timestamped source.
+// Until then the UI deliberately falls back to an editorial track synthesis.
+const TALK_INSIGHTS: Partial<Record<Video["id"], TalkInsight>> = {};
+
+function getInsightContent(video: Video): TalkInsight {
+  return (
+    TALK_INSIGHTS[video.id] ?? {
+      ...TRACK_SUMMARIES[video.track],
+      example: TRACK_EXAMPLES[video.track],
+      contentBasis: "track_synthesis",
+      timestampSeconds: null,
+      reviewedAt: null,
+    }
+  );
+}
 
 function Dashboard() {
   const [query, setQuery] = useState("");
   const [track, setTrack] = useState<Track | "All">("All");
   const [year, setYear] = useState<"All" | number>("All");
   const [open, setOpen] = useState<Video | null>(null);
+  const lastCardTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeSummary = () => {
+    setOpen(null);
+    requestAnimationFrame(() => lastCardTriggerRef.current?.focus());
+  };
 
   // Brief initial-load state so users see structure (skeletons) instead of a
   // pop-in of fully-rendered cards. Also gives images a beat to warm up.
   const [booting, setBooting] = useState(true);
 
-  const years = useMemo(
-    () => Array.from(new Set(VIDEOS.map((v) => v.year))).sort((a, b) => b - a),
-    [],
-  );
+  const years = useMemo(() => Array.from(new Set(VIDEOS.map(videoYear))).sort((a, b) => b - a), []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return VIDEOS.filter((v) => {
       if (track !== "All" && v.track !== track) return false;
-      if (year !== "All" && v.year !== year) return false;
+      if (year !== "All" && videoYear(v) !== year) return false;
       if (!q) return true;
       return (
         v.title.toLowerCase().includes(q) ||
-        v.speaker.toLowerCase().includes(q) ||
-        v.org.toLowerCase().includes(q) ||
+        v.sourceChannel.toLowerCase().includes(q) ||
         v.track.toLowerCase().includes(q)
       );
     });
@@ -208,6 +316,7 @@ function Dashboard() {
   // mismatch — the restored value from sessionStorage is applied in the
   // effect below, after hydration.
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+  const [loadAnnouncement, setLoadAnnouncement] = useState("");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const restoredScrollRef = useRef(false);
 
@@ -220,12 +329,13 @@ function Dashboard() {
         const parsed = JSON.parse(raw) as { count?: number };
         if (parsed.count && parsed.count > PAGE_SIZE) setVisibleCount(parsed.count);
       }
-    } catch {}
+    } catch {
+      // Session storage is optional; continue with the default page size.
+    }
     // End the boot skeleton on the next frame after mount.
     const id = requestAnimationFrame(() => setBooting(false));
     return () => cancelAnimationFrame(id);
   }, []);
-
 
   // Reset pagination whenever the filtered set changes so users always start
   // from the top of the new result list. Skip on the very first render so we
@@ -242,10 +352,7 @@ function Dashboard() {
     setVisibleCount(PAGE_SIZE);
   }, [query, track, year]);
 
-  const visible = useMemo(
-    () => filtered.slice(0, visibleCount),
-    [filtered, visibleCount],
-  );
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
 
   useEffect(() => {
@@ -255,7 +362,13 @@ function Dashboard() {
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
-          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+          setVisibleCount((current) => {
+            const next = Math.min(current + PAGE_SIZE, filtered.length);
+            setLoadAnnouncement(
+              `${next - current} more talks loaded; showing ${next} of ${filtered.length}.`,
+            );
+            return next;
+          });
         }
       },
       { rootMargin: "600px 0px" },
@@ -277,7 +390,9 @@ function Dashboard() {
             SCROLL_KEY,
             JSON.stringify({ y: window.scrollY, count: visibleCount }),
           );
-        } catch {}
+        } catch {
+          // Browsers may deny session storage; scrolling should still work.
+        }
         ticking = false;
       });
     };
@@ -310,15 +425,10 @@ function Dashboard() {
       videoId: open.youtubeId,
       code: open.code,
       track: open.track,
-      speaker: open.speaker,
+      sourceChannel: open.sourceChannel,
     });
     const openedAt = performance.now();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
     return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
       trackEvent("modal_close", {
         videoId: open.youtubeId,
         code: open.code,
@@ -326,7 +436,6 @@ function Dashboard() {
       });
     };
   }, [open]);
-
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -336,9 +445,7 @@ function Dashboard() {
           <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
             AI/E
           </span>
-          <span className="font-display text-sm font-medium tracking-tight">
-            Video Atlas
-          </span>
+          <span className="font-display text-sm font-medium tracking-tight">Video Atlas</span>
         </a>
         <a
           href="https://www.youtube.com/@aiDotEngineer"
@@ -358,7 +465,7 @@ function Dashboard() {
       >
         <div className="crosshair rounded-xl border border-ink/90 bg-paper p-3 shadow-[0_20px_60px_-20px_rgba(20,20,40,0.25)] md:p-5">
           <img
-            src={heroAsset.url}
+            src="/hero-atlas.png"
             alt="AI Engineer Video Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
             width={1731}
             height={909}
@@ -368,32 +475,31 @@ function Dashboard() {
         <div className="mt-6 grid grid-cols-1 gap-6 border-b border-ink/20 pb-10 md:grid-cols-[1fr_1.15fr] md:gap-12">
           <div>
             <h1 className="font-display text-3xl leading-[0.95] md:text-5xl">
-              Every AI Engineer talk, mapped to the pattern it teaches.
+              A working map of AI engineering talks and production patterns.
             </h1>
           </div>
           <p className="max-w-xl self-end font-sans text-base leading-relaxed text-muted-foreground md:ml-[10%] md:text-lg">
-            The AI Engineer conference ships hundreds of talks a year. This
-            atlas keeps only the ones that survived contact with production —
-            grouped by the six tracks that decide whether your system holds up
-            on Tuesday.
+            Explore 14 exact, reachable sources across six practical tracks, ordered by their
+            YouTube publication date. Transcript-backed insight extraction is still in progress, so
+            the atlas keeps the evidence basis visible while the knowledge layer matures.
           </p>
+        </div>
+        <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
+          <strong className="text-ink">Source catalog verified.</strong> Titles, channels,
+          publication dates, durations, and links were checked against YouTube on 14 Jul 2026. Modal
+          insights remain explicitly labelled as editorial track syntheses, not speaker-attributed
+          transcript summaries.
         </div>
       </section>
 
       {/* Filters */}
-      <section
-        aria-labelledby="explore-title"
-        className="mx-auto max-w-[1400px] px-6 pt-10"
-      >
+      <section aria-labelledby="explore-title" className="mx-auto max-w-[1400px] px-6 pt-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               Browse the atlas
             </span>
-            <h2
-              id="explore-title"
-              className="mt-2 font-display text-2xl md:text-3xl"
-            >
+            <h2 id="explore-title" className="mt-2 font-display text-2xl md:text-3xl">
               Find the talk behind the problem.
             </h2>
           </div>
@@ -401,7 +507,8 @@ function Dashboard() {
             aria-live="polite"
             className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
           >
-            {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")} results
+            {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")}{" "}
+            results
           </span>
         </div>
 
@@ -440,11 +547,7 @@ function Dashboard() {
 
         {/* Track chips */}
         <div className="mt-5 flex flex-wrap gap-2" aria-label="Filter by track">
-          <TrackChip
-            label="All tracks"
-            active={track === "All"}
-            onClick={() => setTrack("All")}
-          />
+          <TrackChip label="All tracks" active={track === "All"} onClick={() => setTrack("All")} />
           {TRACKS.map((t) => (
             <TrackChip
               key={t.code}
@@ -458,9 +561,7 @@ function Dashboard() {
             Year
             <select
               value={year}
-              onChange={(e) =>
-                setYear(e.target.value === "All" ? "All" : Number(e.target.value))
-              }
+              onChange={(e) => setYear(e.target.value === "All" ? "All" : Number(e.target.value))}
               className="bg-transparent font-mono text-[11px] outline-none"
             >
               <option value="All">All</option>
@@ -484,25 +585,32 @@ function Dashboard() {
                   <button
                     key={v.id}
                     type="button"
-                    onClick={() => setOpen(v)}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
+                    aria-labelledby={`card-title-${v.id}`}
+                    onClick={(event) => {
+                      lastCardTriggerRef.current = event.currentTarget;
+                      setOpen(v);
+                    }}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper motion-safe:hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
                   >
                     <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
                       <Thumbnail video={v} token={t.token} eager={eager} />
                       <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
-                        {v.duration}
+                        {videoDuration(v)}
                       </span>
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                         <span>{v.code}</span>
-                        <span>{v.year}</span>
+                        <span>{videoPublishedDate(v)}</span>
                       </div>
-                      <h3 className="mt-2 font-display text-lg leading-tight">
+                      <h3
+                        id={`card-title-${v.id}`}
+                        className="mt-2 font-display text-lg leading-tight"
+                      >
                         {v.title}
                       </h3>
                       <p className="mt-2 font-sans text-sm text-muted-foreground">
-                        {v.speaker} · {v.org}
+                        YouTube · {v.sourceChannel}
                       </p>
                       <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
                         <span
@@ -515,15 +623,14 @@ function Dashboard() {
                           />
                           {t.name}
                         </span>
-                        <span className="text-ink group-hover:underline">
-                          Summary →
-                        </span>
+                        <span className="text-ink group-hover:underline">Summary →</span>
                       </div>
                     </div>
                   </button>
                 );
               })}
-          {!booting && hasMore &&
+          {!booting &&
+            hasMore &&
             Array.from({ length: Math.min(3, filtered.length - visibleCount) }).map((_, i) => (
               <CardSkeleton key={`sk-more-${i}`} />
             ))}
@@ -531,14 +638,30 @@ function Dashboard() {
 
         {/* Sentinel — IntersectionObserver reveals the next page when it
             approaches the viewport. When exhausted, shows an end marker. */}
+        <span className="sr-only" aria-live="polite">
+          {loadAnnouncement}
+        </span>
         {!booting && hasMore ? (
-          <div ref={sentinelRef} aria-hidden="true" className="mt-10 flex justify-center pb-24">
-            <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-              Loading more talks…
-            </span>
+          <div ref={sentinelRef} className="mt-10 flex justify-center pb-24">
+            <button
+              type="button"
+              onClick={() => {
+                setVisibleCount((current) => {
+                  const next = Math.min(current + PAGE_SIZE, filtered.length);
+                  setLoadAnnouncement(
+                    `${next - current} more talks loaded; showing ${next} of ${filtered.length}.`,
+                  );
+                  return next;
+                });
+              }}
+              className="min-h-11 rounded-xl border border-ink/30 bg-card px-5 py-3 font-mono text-[11px] uppercase tracking-widest shadow-[0_8px_24px_-14px_rgba(20,20,40,0.4)] transition hover:-translate-y-px hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]"
+            >
+              Load {Math.min(PAGE_SIZE, filtered.length - visibleCount)} more
+            </button>
           </div>
         ) : (
-          !booting && filtered.length > 0 && (
+          !booting &&
+          filtered.length > 0 && (
             <div className="mt-10 flex justify-center pb-24">
               <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                 End of atlas · {filtered.length} talks
@@ -547,7 +670,6 @@ function Dashboard() {
           )
         )}
 
-
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
             No talks match. Try resetting filters.
@@ -555,19 +677,19 @@ function Dashboard() {
         )}
       </section>
 
-
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <span>© Video Atlas · fixture edition</span>
           <span className="flex items-center gap-4">
-            <a href="/analytics" className="hover:text-ink">Analytics debug</a>
+            <a href="/analytics" className="hover:text-ink">
+              Analytics debug
+            </a>
             <span>Built for engineers who ship on Tuesday</span>
           </span>
         </div>
       </footer>
 
-
-      {open && <SummaryModal video={open} onClose={() => setOpen(null)} />}
+      {open && <SummaryModal video={open} onClose={closeSummary} />}
     </div>
   );
 }
@@ -595,39 +717,59 @@ function TrackChip({
       }
     >
       {token && !active && (
-        <span
-          className="h-2 w-2 rounded-full"
-          style={{ background: `var(--${token})` }}
-        />
+        <span className="h-2 w-2 rounded-full" style={{ background: `var(--${token})` }} />
       )}
       {label}
     </button>
   );
 }
 
-
 // Loads the YouTube IFrame API once so we can listen for caption state
 // changes on any embedded player. The first load is timed as a perf mark.
-let ytApiPromise: Promise<any> | null = null;
-function loadYouTubeApi(): Promise<any> {
+type YouTubePlayerEvent = { data?: unknown };
+type YouTubePlayer = {
+  destroy?: () => void;
+  getOption?: (module: string, option: string) => unknown;
+};
+type YouTubeApi = {
+  Player: new (
+    element: HTMLIFrameElement,
+    options: {
+      events: {
+        onApiChange: () => void;
+        onError: (event: YouTubePlayerEvent) => void;
+        onReady: () => void;
+        onStateChange: (event: YouTubePlayerEvent) => void;
+      };
+    },
+  ) => YouTubePlayer;
+};
+type WindowWithYouTube = Window & {
+  YT?: YouTubeApi;
+  onYouTubeIframeAPIReady?: () => void;
+};
+
+let ytApiPromise: Promise<YouTubeApi> | null = null;
+function loadYouTubeApi(): Promise<YouTubeApi> {
   if (typeof window === "undefined") return Promise.reject(new Error("ssr"));
-  const w = window as any;
+  const w = window as WindowWithYouTube;
   if (w.YT && w.YT.Player) return Promise.resolve(w.YT);
   if (ytApiPromise) return ytApiPromise;
   const endMark = perfMark("yt_api_load");
-  ytApiPromise = new Promise((resolve, reject) => {
+  ytApiPromise = new Promise<YouTubeApi>((resolve, reject) => {
     const prev = w.onYouTubeIframeAPIReady;
     w.onYouTubeIframeAPIReady = () => {
       prev?.();
       endMark({ outcome: "ok" });
-      resolve(w.YT);
+      if (w.YT) resolve(w.YT);
+      else reject(new Error("YouTube API loaded without a Player constructor"));
     };
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
     s.async = true;
     s.onerror = (e) => {
       endMark({ outcome: "error" });
-      logClientError("youtube_api_load_failed", {}, e as any);
+      logClientError("youtube_api_load_failed", {}, e);
       reject(new Error("Failed to load YouTube IFrame API"));
     };
     document.head.appendChild(s);
@@ -648,7 +790,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
     captionsLang.current = null;
     playReported.current = false;
     if (!iframeRef.current) return;
-    let player: any;
+    let player: YouTubePlayer | undefined;
     let cancelled = false;
     const readyEnd = perfMark("player_ready", { videoId: video.youtubeId });
     // Captions module loads asynchronously after playback starts. We start a
@@ -666,7 +808,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
             onReady: () => {
               readyEnd({ outcome: "ok" });
             },
-            onError: (ev: any) => {
+            onError: (ev: YouTubePlayerEvent) => {
               readyEnd({ outcome: "error", errorCode: ev?.data });
               logClientError("youtube_player_error", {
                 videoId: video.youtubeId,
@@ -675,7 +817,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
               });
               setFailed(true);
             },
-            onStateChange: (ev: any) => {
+            onStateChange: (ev: YouTubePlayerEvent) => {
               // YT.PlayerState.PLAYING === 1
               if (ev?.data === 1 && !playReported.current) {
                 playReported.current = true;
@@ -689,10 +831,14 @@ function EmbeddedPlayer({ video }: { video: Video }) {
             onApiChange: () => {
               try {
                 const opt =
-                  player.getOption?.("captions", "track") ??
-                  player.getOption?.("cc", "track");
-                const hasTrack = !!opt && Object.keys(opt).length > 0;
-                const lang = hasTrack ? ((opt as any).languageCode ?? null) : null;
+                  player?.getOption?.("captions", "track") ?? player?.getOption?.("cc", "track");
+                const optionRecord =
+                  typeof opt === "object" && opt !== null ? (opt as Record<string, unknown>) : null;
+                const hasTrack = optionRecord !== null && Object.keys(optionRecord).length > 0;
+                const lang =
+                  hasTrack && typeof optionRecord.languageCode === "string"
+                    ? optionRecord.languageCode
+                    : null;
 
                 if (hasTrack && !captionsActive.current) {
                   captionsActive.current = true;
@@ -745,9 +891,11 @@ function EmbeddedPlayer({ video }: { video: Video }) {
       captionsProbeEnd.current = null;
       try {
         player?.destroy?.();
-      } catch {}
+      } catch {
+        // The iframe API may already have disposed the player.
+      }
     };
-  }, [video.youtubeId, video.code, video.track]);
+  }, [video]);
 
   if (failed) {
     return (
@@ -788,141 +936,165 @@ function EmbeddedPlayer({ video }: { video: Video }) {
   );
 }
 
-
-
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
   const t = TRACKS.find((tr) => tr.name === video.track)!;
-  const s = TRACK_SUMMARIES[video.track];
-  
+  const insight = getInsightContent(video);
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Summary of ${video.title}`}
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm md:p-10"
-      onClick={onClose}
+    <DialogPrimitive.Root
+      open
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[1100px] overflow-hidden rounded-2xl border border-ink/20 bg-paper shadow-[0_40px_80px_-20px_rgba(20,20,40,0.55)]"
-      >
-        {/* Modal header bar */}
-        <div className="flex items-center justify-between border-b border-ink/15 bg-card px-6 py-3">
-          <span
-            className="font-mono text-[11px] uppercase tracking-widest"
-            style={{ color: `var(--${t.token})` }}
-          >
-            {video.code.toUpperCase()} · {t.code} {video.track}
-          </span>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-ink"
-          >
-            Close ✕
-          </button>
-        </div>
-
-        {/* Hero row */}
-        <div className="grid grid-cols-1 gap-6 border-b border-ink/15 p-6 md:grid-cols-[1.05fr_1fr] md:p-8">
-          <div>
-            <h2 className="font-display text-3xl leading-[1.02] md:text-4xl">
-              {video.title}
-            </h2>
-            <p className="mt-4 font-sans text-sm text-muted-foreground">
-              A talk by <span className="text-ink">{video.speaker}</span> ·{" "}
-              {video.org} · {video.year} · {video.duration}
-            </p>
-          </div>
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-ink/80 bg-ink shadow-[0_20px_50px_-20px_rgba(20,20,40,0.55)]">
-            <EmbeddedPlayer video={video} />
-          </div>
-        </div>
-
-        {/* Sections */}
-        <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_320px]">
-          <div className="divide-y divide-ink/10">
-            <Row label="Claim" body={s.claim} />
-            <Row label="Implication" body={s.implication} />
-            <Row label="When to use" body={s.whenToUse} />
-            <Row
-              label="Example"
-              body={
-                <div className="rounded-xl border border-ink/20 bg-card p-4 shadow-[0_8px_24px_-16px_rgba(20,20,40,0.35)]">
-                  <div
-                    className="font-mono text-[10px] uppercase tracking-widest"
-                    style={{ color: `var(--${t.token})` }}
-                  >
-                    Illustrative scenario
-                  </div>
-                  <p className="mt-2 font-display text-lg leading-snug">
-                    Applying "{video.title}" in a production team.
-                  </p>
-                  <div className="mt-3 border-t border-ink/10 pt-3">
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      What this makes visible
-                    </div>
-                    <p className="mt-1 font-sans text-sm text-muted-foreground">
-                      Engineering teams can adopt the pattern without rewriting
-                      surrounding infrastructure, and can measure whether the
-                      change actually improves the metric it was chosen for.
-                    </p>
-                  </div>
-                </div>
-              }
-            />
-            <Row label="Caveat" body={<span className="text-[color:var(--track-5)]">{s.caveat}</span>} />
-          </div>
-
-          {/* Sidebar */}
-          <aside className="border-t border-ink/15 bg-card p-6 md:border-l md:border-t-0">
-            <SideBlock label="Track">
-              <span
-                className="inline-flex items-center gap-2 font-display text-base"
-                style={{ color: `var(--${t.token})` }}
-              >
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: `var(--${t.token})` }}
-                />
-                {t.code} · {video.track}
-              </span>
-            </SideBlock>
-            <SideBlock label="Speaker">
-              <div className="font-display text-base">{video.speaker}</div>
-              <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                {video.org}
-              </div>
-            </SideBlock>
-            <SideBlock label="Record status">
-              <div className="font-sans text-sm">Year: {video.year}</div>
-              <div className="font-sans text-sm">Duration: {video.duration}</div>
-              <div className="font-sans text-sm">Code: {video.code}</div>
-            </SideBlock>
-
-            <a
-              href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() =>
-                trackEvent("open_on_youtube_click", {
-                  videoId: video.youtubeId,
-                  code: video.code,
-                  track: video.track,
-                  speaker: video.speaker,
-                })
-              }
-              className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="fixed inset-0 z-50 w-full overflow-y-auto overscroll-contain border-ink/20 bg-paper shadow-[0_40px_80px_-20px_rgba(20,20,40,0.55)] focus:outline-none sm:left-1/2 sm:top-1/2 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-[1100px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border">
+          {/* Modal header bar */}
+          <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-ink/15 bg-card/95 px-6 py-3 backdrop-blur-sm">
+            <span
+              className="font-mono text-[11px] uppercase tracking-widest"
+              style={{ color: `var(--${t.token})` }}
             >
-              Open on YouTube
-              <span>↗</span>
-            </a>
-          </aside>
-        </div>
-      </div>
-    </div>
+              {video.code.toUpperCase()} · {t.code} {video.track}
+            </span>
+            <DialogPrimitive.Close className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:bg-ink/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]">
+              Close ✕
+            </DialogPrimitive.Close>
+          </div>
+
+          {/* Hero row */}
+          <div className="grid grid-cols-1 gap-6 border-b border-ink/15 p-6 md:grid-cols-[1.05fr_1fr] md:p-8">
+            <div>
+              <DialogPrimitive.Title className="font-display text-3xl leading-[1.02] md:text-4xl">
+                {video.title}
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Description className="mt-4 font-sans text-sm text-muted-foreground">
+                Source channel: <span className="text-ink">{video.sourceChannel}</span> · published{" "}
+                {videoPublishedDate(video)} · {videoDuration(video)}
+              </DialogPrimitive.Description>
+              <div className="mt-4 inline-flex rounded-full border border-ink/20 bg-card px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Track synthesis · not a transcript summary
+              </div>
+            </div>
+            <div className="relative aspect-video overflow-hidden rounded-xl border border-ink/80 bg-ink shadow-[0_20px_50px_-20px_rgba(20,20,40,0.55)]">
+              <EmbeddedPlayer video={video} />
+            </div>
+          </div>
+
+          {/* Sections */}
+          <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_320px]">
+            <div className="order-2 divide-y divide-ink/10 md:order-1">
+              <Row label="Claim" body={insight.claim} />
+              <Row label="Implication" body={insight.implication} />
+              <Row label="When to use" body={insight.whenToUse} />
+              <Row
+                label="Illustrative example"
+                body={
+                  <div className="rounded-xl border border-ink/20 bg-card p-4 shadow-[0_8px_24px_-16px_rgba(20,20,40,0.35)]">
+                    <div
+                      className="font-mono text-[10px] uppercase tracking-widest"
+                      style={{ color: `var(--${t.token})` }}
+                    >
+                      Editorial scenario · not from the talk
+                    </div>
+                    <div className="mt-3 space-y-3">
+                      <ExamplePart label="Situation" body={insight.example.situation} />
+                      <ExamplePart label="Application" body={insight.example.application} />
+                      <ExamplePart
+                        label="Observable outcome"
+                        body={insight.example.observableOutcome}
+                      />
+                    </div>
+                  </div>
+                }
+              />
+              <Row
+                label="Caveat"
+                body={<span className="text-[color:var(--track-5)]">{insight.caveat}</span>}
+              />
+            </div>
+
+            {/* Sidebar */}
+            <aside className="order-1 border-b border-ink/15 bg-card p-6 md:order-2 md:border-b-0 md:border-l">
+              <div className="mb-5 rounded-xl border border-ink/20 bg-paper p-4">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Content basis
+                </div>
+                <div className="mt-2 font-display text-base">Editorial track synthesis</div>
+                <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
+                  The claim, implication, caveat, and example are not attributed to this speaker.
+                  Transcript-backed notes require a reviewed timestamp.
+                </p>
+              </div>
+              <SideBlock label="Track">
+                <span
+                  className="inline-flex items-center gap-2 font-display text-base"
+                  style={{ color: `var(--${t.token})` }}
+                >
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ background: `var(--${t.token})` }}
+                  />
+                  {t.code} · {video.track}
+                </span>
+              </SideBlock>
+              <SideBlock label="YouTube source">
+                <div className="font-display text-base">{video.sourceChannel}</div>
+                <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Exact YouTube metadata
+                </div>
+              </SideBlock>
+              <SideBlock label="Record status">
+                <div className="font-sans text-sm">Published: {videoPublishedDate(video)}</div>
+                <div className="font-sans text-sm">Duration: {videoDuration(video)}</div>
+                <div className="font-sans text-sm">Code: {video.code}</div>
+                <div className="font-sans text-sm">Review: source metadata verified</div>
+                <div className="font-sans text-sm">
+                  Verified:{" "}
+                  {new Date(SOURCE_CATALOG_VERIFIED_AT).toLocaleDateString("en", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </div>
+              </SideBlock>
+
+              <a
+                href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() =>
+                  trackEvent("open_on_youtube_click", {
+                    videoId: video.youtubeId,
+                    code: video.code,
+                    track: video.track,
+                    sourceChannel: video.sourceChannel,
+                  })
+                }
+                className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
+              >
+                Open source on YouTube
+                <span>↗</span>
+              </a>
+            </aside>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
+function ExamplePart({ label, body }: { label: string; body: string }) {
+  return (
+    <div className="border-t border-ink/10 pt-3 first:border-t-0 first:pt-0">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <p className="mt-1 font-sans text-sm leading-relaxed text-ink">{body}</p>
+    </div>
+  );
+}
 
 function Row({ label, body }: { label: string; body: React.ReactNode }) {
   return (
@@ -934,7 +1106,6 @@ function Row({ label, body }: { label: string; body: React.ReactNode }) {
     </div>
   );
 }
-
 
 function SideBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (

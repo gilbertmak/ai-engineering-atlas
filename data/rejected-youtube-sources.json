@@ -1,0 +1,38 @@
+{
+  "reviewedAt": "2026-07-14T00:00:00+08:00",
+  "reason": "Legacy catalog records excluded from the public gallery after live YouTube verification.",
+  "unavailableYoutubeIds": [
+    "SnbGD677nu0",
+    "hFhOfAcNzYo",
+    "N6iN_hRc0DE",
+    "ATbkGP1DGMw",
+    "1itPVV0f2Zk",
+    "Xr1LtcT-Fjs",
+    "tsJx-CBUUms",
+    "6Uf6DKancpg",
+    "MDlYd8QW6yA",
+    "cM8ChSbF4c8",
+    "zM2rudMhVXk",
+    "8x3s3wJoQvI",
+    "H2xWjMcQxk4",
+    "Y4rXKgClKl8",
+    "sQ6EtA0Gd6E",
+    "aG6RfL2kwXo",
+    "5rZ1o5Yh1qE",
+    "V8vP9r7wnCw",
+    "6M2fUv3YrhE",
+    "F9F3H3xkyRs",
+    "vzGZ0nJn6bA",
+    "5Xn4c9L2FMs",
+    "vDaEo83nJ4Q"
+  ],
+  "metadataMismatch": [
+    {
+      "legacyCode": "aie-045",
+      "youtubeId": "kxT8-C1vmd4",
+      "actualTitle": "Zig in 100 Seconds",
+      "actualChannel": "Fireship",
+      "reason": "Reachable but unrelated to the claimed AI engineering source."
+    }
+  ]
+}

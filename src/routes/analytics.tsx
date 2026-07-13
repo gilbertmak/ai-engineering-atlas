@@ -1,11 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  clearRecentEvents,
-  getRecentEvents,
-  subscribe,
-  type LoggedEvent,
-} from "@/lib/analytics";
+import { clearRecentEvents, getRecentEvents, subscribe, type LoggedEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/analytics")({
   head: () => ({
@@ -56,8 +51,7 @@ function AnalyticsDebugPage() {
       .filter((e) => {
         if (!q) return true;
         return (
-          e.event.toLowerCase().includes(q) ||
-          JSON.stringify(e.props).toLowerCase().includes(q)
+          e.event.toLowerCase().includes(q) || JSON.stringify(e.props).toLowerCase().includes(q)
         );
       })
       .slice()
@@ -70,7 +64,7 @@ function AnalyticsDebugPage() {
     const perfEvents = events.filter((e) => e.kind === "perf");
     const perfByName = new Map<string, number[]>();
     for (const p of perfEvents) {
-      const d = Number((p.props as any).duration_ms);
+      const d = Number(p.props.duration_ms);
       if (!Number.isFinite(d)) continue;
       const arr = perfByName.get(p.event) ?? [];
       arr.push(d);
@@ -152,9 +146,7 @@ function AnalyticsDebugPage() {
                 onClick={() => setFilter(f)}
                 className={
                   "rounded-lg px-3 py-1.5 transition " +
-                  (filter === f
-                    ? "bg-ink text-paper"
-                    : "text-muted-foreground hover:text-ink")
+                  (filter === f ? "bg-ink text-paper" : "text-muted-foreground hover:text-ink")
                 }
               >
                 {f}
@@ -189,7 +181,10 @@ function AnalyticsDebugPage() {
           {filtered.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
               No events yet. Interact with the app in another tab or return to
-              <Link to="/" className="ml-1 underline">the atlas</Link>.
+              <Link to="/" className="ml-1 underline">
+                the atlas
+              </Link>
+              .
             </div>
           ) : (
             filtered.map((e) => <EventRow key={e.id} e={e} />)
@@ -240,8 +235,8 @@ function EventRow({ e }: { e: LoggedEvent }) {
     e.kind === "error"
       ? "border-[color:var(--track-5)] text-[color:var(--track-5)]"
       : e.kind === "perf"
-      ? "border-ink text-ink"
-      : "border-ink/40 text-muted-foreground";
+        ? "border-ink text-ink"
+        : "border-ink/40 text-muted-foreground";
   const propKeys = Object.keys(e.props);
   return (
     <div className="rounded-xl border border-ink/15 bg-card">
@@ -261,19 +256,20 @@ function EventRow({ e }: { e: LoggedEvent }) {
         >
           {e.kind}
         </span>
-        <span className="flex-1 truncate font-mono text-xs text-ink">
-          {e.event}
-        </span>
+        <span className="flex-1 truncate font-mono text-xs text-ink">{e.event}</span>
         {propKeys.length > 0 && (
           <span className="hidden md:inline truncate max-w-[420px] font-mono text-[11px] text-muted-foreground">
-            {propKeys.slice(0, 4).map((k) => `${k}=${formatVal((e.props as any)[k])}`).join("  ")}
+            {propKeys
+              .slice(0, 4)
+              .map((k) => `${k}=${formatVal(e.props[k])}`)
+              .join("  ")}
           </span>
         )}
         <span className="font-mono text-[10px] text-muted-foreground">{open ? "▾" : "▸"}</span>
       </button>
       {open && (
         <pre className="overflow-x-auto border-t border-ink/10 bg-paper/60 px-4 py-3 font-mono text-[11px] leading-relaxed text-ink">
-{JSON.stringify(e.props, null, 2)}
+          {JSON.stringify(e.props, null, 2)}
         </pre>
       )}
     </div>

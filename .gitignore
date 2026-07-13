@@ -12,9 +12,11 @@ dist
 dist-ssr
 .output
 .vinxi
+.vinext
 .tanstack/**
 .nitro
 *.local
+*.tsbuildinfo
 
 # Wrangler / Cloudflare
 .wrangler/
