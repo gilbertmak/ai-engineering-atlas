@@ -460,76 +460,70 @@ function Dashboard() {
 
         {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((v, i) => {
-            const t = TRACKS.find((tr) => tr.name === v.track)!;
-            // Eager-load the first row (LCP candidates); lazy-load the rest so
-            // scrolling through 40+ cards doesn't fire 40+ image requests up front.
-            const eager = i < 3;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => setOpen(v)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
-              >
-                <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
-                  <img
-                    src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
-                    alt=""
-                    loading={eager ? "eager" : "lazy"}
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
-                    {v.duration}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <span>{v.code}</span>
-                    <span>{v.year}</span>
-                  </div>
-                  <h3 className="mt-2 font-display text-lg leading-tight">
-                    {v.title}
-                  </h3>
-                  <p className="mt-2 font-sans text-sm text-muted-foreground">
-                    {v.speaker} · {v.org}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
-                    <span
-                      className="inline-flex items-center gap-2"
-                      style={{ color: `var(--${t.token})` }}
-                    >
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ background: `var(--${t.token})` }}
-                      />
-                      {t.name}
-                    </span>
-                    <span className="text-ink group-hover:underline">
-                      Summary →
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+          {booting
+            ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
+            : visible.map((v, i) => {
+                const t = TRACKS.find((tr) => tr.name === v.track)!;
+                const eager = i < 3;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setOpen(v)}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
+                  >
+                    <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
+                      <Thumbnail video={v} token={t.token} eager={eager} />
+                      <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
+                        {v.duration}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        <span>{v.code}</span>
+                        <span>{v.year}</span>
+                      </div>
+                      <h3 className="mt-2 font-display text-lg leading-tight">
+                        {v.title}
+                      </h3>
+                      <p className="mt-2 font-sans text-sm text-muted-foreground">
+                        {v.speaker} · {v.org}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
+                        <span
+                          className="inline-flex items-center gap-2"
+                          style={{ color: `var(--${t.token})` }}
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ background: `var(--${t.token})` }}
+                          />
+                          {t.name}
+                        </span>
+                        <span className="text-ink group-hover:underline">
+                          Summary →
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+          {!booting && hasMore &&
+            Array.from({ length: Math.min(3, filtered.length - visibleCount) }).map((_, i) => (
+              <CardSkeleton key={`sk-more-${i}`} />
+            ))}
         </div>
 
         {/* Sentinel — IntersectionObserver reveals the next page when it
             approaches the viewport. When exhausted, shows an end marker. */}
-        {hasMore ? (
-          <div
-            ref={sentinelRef}
-            aria-hidden="true"
-            className="mt-10 flex justify-center pb-24"
-          >
+        {!booting && hasMore ? (
+          <div ref={sentinelRef} aria-hidden="true" className="mt-10 flex justify-center pb-24">
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               Loading more talks…
             </span>
           </div>
         ) : (
-          filtered.length > 0 && (
+          !booting && filtered.length > 0 && (
             <div className="mt-10 flex justify-center pb-24">
               <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                 End of atlas · {filtered.length} talks
@@ -537,6 +531,7 @@ function Dashboard() {
             </div>
           )
         )}
+
 
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
