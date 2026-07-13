@@ -592,7 +592,7 @@ function TrackChip({
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
   const t = TRACKS.find((tr) => tr.name === video.track)!;
   const s = TRACK_SUMMARIES[video.track];
-  const [showTranscript, setShowTranscript] = useState(false);
+  
   return (
     <div
       role="dialog"
