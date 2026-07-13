@@ -590,6 +590,125 @@ function TrackChip({
 }
 
 
+// Loads the YouTube IFrame API once so we can listen for caption state
+// changes on any embedded player.
+let ytApiPromise: Promise<any> | null = null;
+function loadYouTubeApi(): Promise<any> {
+  if (typeof window === "undefined") return Promise.reject(new Error("ssr"));
+  const w = window as any;
+  if (w.YT && w.YT.Player) return Promise.resolve(w.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve, reject) => {
+    const prev = w.onYouTubeIframeAPIReady;
+    w.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve(w.YT);
+    };
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    s.async = true;
+    s.onerror = (e) => {
+      logClientError("youtube_api_load_failed", {}, e as any);
+      reject(new Error("Failed to load YouTube IFrame API"));
+    };
+    document.head.appendChild(s);
+  });
+  return ytApiPromise;
+}
+
+function EmbeddedPlayer({ video }: { video: Video }) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const captionsReported = useRef(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    captionsReported.current = false;
+    if (!iframeRef.current) return;
+    let player: any;
+    let cancelled = false;
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled || !iframeRef.current) return;
+        player = new YT.Player(iframeRef.current, {
+          events: {
+            onError: (ev: any) => {
+              logClientError("youtube_player_error", {
+                videoId: video.youtubeId,
+                code: video.code,
+                errorCode: ev?.data,
+              });
+              setFailed(true);
+            },
+            onApiChange: () => {
+              try {
+                // Captions module loads asynchronously after playback starts;
+                // read the active track — non-empty means CC is on.
+                const opt =
+                  player.getOption?.("captions", "track") ??
+                  player.getOption?.("cc", "track");
+                if (opt && Object.keys(opt).length > 0 && !captionsReported.current) {
+                  captionsReported.current = true;
+                  trackEvent("captions_enabled", {
+                    videoId: video.youtubeId,
+                    code: video.code,
+                    track: video.track,
+                    language: (opt as any).languageCode,
+                  });
+                }
+              } catch (err) {
+                logClientError("captions_probe_failed", { videoId: video.youtubeId }, err);
+              }
+            },
+          },
+        });
+      })
+      .catch(() => setFailed(true));
+    return () => {
+      cancelled = true;
+      try {
+        player?.destroy?.();
+      } catch {}
+    };
+  }, [video.youtubeId, video.code, video.track]);
+
+  if (failed) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink p-6 text-center font-sans text-sm text-paper">
+        <div>The embedded player couldn’t load.</div>
+        <a
+          href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() =>
+            trackEvent("open_on_youtube_click", {
+              videoId: video.youtubeId,
+              from: "player_fallback",
+            })
+          }
+          className="rounded-full border border-paper/40 px-3 py-1 text-xs uppercase tracking-widest hover:bg-paper hover:text-ink"
+        >
+          Watch on YouTube ↗
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      ref={iframeRef}
+      src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1&enablejsapi=1`}
+      title={video.title}
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      onError={() => {
+        logClientError("iframe_error", { videoId: video.youtubeId });
+        setFailed(true);
+      }}
+      className="absolute inset-0 h-full w-full"
+    />
+  );
+}
 
 
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
