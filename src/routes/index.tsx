@@ -204,28 +204,28 @@ function Dashboard() {
   }, [query, track, year]);
 
   const PAGE_SIZE = 12;
-  // Restore visibleCount from sessionStorage so returning to the page keeps
-  // the same amount of content mounted — otherwise a scroll restore would
-  // land past the end of the rendered grid.
-  const [visibleCount, setVisibleCount] = useState<number>(() => {
-    if (typeof window === "undefined") return PAGE_SIZE;
-    try {
-      const raw = sessionStorage.getItem(SCROLL_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { count?: number };
-        if (parsed.count && parsed.count > PAGE_SIZE) return parsed.count;
-      }
-    } catch {}
-    return PAGE_SIZE;
-  });
+  // Always start at PAGE_SIZE on both server and client to avoid a hydration
+  // mismatch — the restored value from sessionStorage is applied in the
+  // effect below, after hydration.
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const restoredScrollRef = useRef(false);
 
   useEffect(() => {
+    // Restore visibleCount (post-hydration) so returning to the page keeps
+    // the same amount of content mounted before we try to restore scroll.
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { count?: number };
+        if (parsed.count && parsed.count > PAGE_SIZE) setVisibleCount(parsed.count);
+      }
+    } catch {}
     // End the boot skeleton on the next frame after mount.
     const id = requestAnimationFrame(() => setBooting(false));
     return () => cancelAnimationFrame(id);
   }, []);
+
 
   // Reset pagination whenever the filtered set changes so users always start
   // from the top of the new result list. Skip on the very first render so we
