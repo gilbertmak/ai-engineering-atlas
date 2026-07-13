@@ -230,7 +230,7 @@ function Dashboard() {
             aria-live="polite"
             className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
           >
-            {String(filtered.length).padStart(2, "0")} results
+            {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")} results
           </span>
         </div>
 
