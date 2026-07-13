@@ -517,10 +517,11 @@ function Row({ label, body }: { label: string; body: React.ReactNode }) {
       <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <div className="font-display text-lg leading-snug text-ink">{body}</div>
+      <div className="font-sans text-[15px] leading-relaxed text-ink">{body}</div>
     </div>
   );
 }
+
 
 function SideBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
