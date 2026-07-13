@@ -603,23 +603,26 @@ function TrackChip({
 
 
 // Loads the YouTube IFrame API once so we can listen for caption state
-// changes on any embedded player.
+// changes on any embedded player. The first load is timed as a perf mark.
 let ytApiPromise: Promise<any> | null = null;
 function loadYouTubeApi(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("ssr"));
   const w = window as any;
   if (w.YT && w.YT.Player) return Promise.resolve(w.YT);
   if (ytApiPromise) return ytApiPromise;
+  const endMark = perfMark("yt_api_load");
   ytApiPromise = new Promise((resolve, reject) => {
     const prev = w.onYouTubeIframeAPIReady;
     w.onYouTubeIframeAPIReady = () => {
       prev?.();
+      endMark({ outcome: "ok" });
       resolve(w.YT);
     };
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
     s.async = true;
     s.onerror = (e) => {
+      endMark({ outcome: "error" });
       logClientError("youtube_api_load_failed", {}, e as any);
       reject(new Error("Failed to load YouTube IFrame API"));
     };
@@ -630,20 +633,37 @@ function loadYouTubeApi(): Promise<any> {
 
 function EmbeddedPlayer({ video }: { video: Video }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const captionsReported = useRef(false);
+  const captionsActive = useRef(false);
+  const captionsLang = useRef<string | null>(null);
+  const playReported = useRef(false);
+  const captionsProbeEnd = useRef<((extra?: Record<string, unknown>) => number) | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    captionsReported.current = false;
+    captionsActive.current = false;
+    captionsLang.current = null;
+    playReported.current = false;
     if (!iframeRef.current) return;
     let player: any;
     let cancelled = false;
+    const readyEnd = perfMark("player_ready", { videoId: video.youtubeId });
+    // Captions module loads asynchronously after playback starts. We start a
+    // timer at player-ready and close it the first time captions surface,
+    // giving us a "how long from playback to CC available" measurement.
+    captionsProbeEnd.current = perfMark("captions_probe", {
+      videoId: video.youtubeId,
+    });
+
     loadYouTubeApi()
       .then((YT) => {
         if (cancelled || !iframeRef.current) return;
         player = new YT.Player(iframeRef.current, {
           events: {
+            onReady: () => {
+              readyEnd({ outcome: "ok" });
+            },
             onError: (ev: any) => {
+              readyEnd({ outcome: "error", errorCode: ev?.data });
               logClientError("youtube_player_error", {
                 videoId: video.youtubeId,
                 code: video.code,
@@ -651,20 +671,55 @@ function EmbeddedPlayer({ video }: { video: Video }) {
               });
               setFailed(true);
             },
+            onStateChange: (ev: any) => {
+              // YT.PlayerState.PLAYING === 1
+              if (ev?.data === 1 && !playReported.current) {
+                playReported.current = true;
+                trackEvent("player_play", {
+                  videoId: video.youtubeId,
+                  code: video.code,
+                  track: video.track,
+                });
+              }
+            },
             onApiChange: () => {
               try {
-                // Captions module loads asynchronously after playback starts;
-                // read the active track — non-empty means CC is on.
                 const opt =
                   player.getOption?.("captions", "track") ??
                   player.getOption?.("cc", "track");
-                if (opt && Object.keys(opt).length > 0 && !captionsReported.current) {
-                  captionsReported.current = true;
+                const hasTrack = !!opt && Object.keys(opt).length > 0;
+                const lang = hasTrack ? ((opt as any).languageCode ?? null) : null;
+
+                if (hasTrack && !captionsActive.current) {
+                  captionsActive.current = true;
+                  captionsLang.current = lang;
+                  captionsProbeEnd.current?.({ outcome: "captions_available" });
+                  captionsProbeEnd.current = null;
                   trackEvent("captions_enabled", {
                     videoId: video.youtubeId,
                     code: video.code,
                     track: video.track,
-                    language: (opt as any).languageCode,
+                    language: lang,
+                    dedupe: video.youtubeId,
+                  });
+                } else if (!hasTrack && captionsActive.current) {
+                  // User toggled captions off.
+                  captionsActive.current = false;
+                  trackEvent("captions_disabled", {
+                    videoId: video.youtubeId,
+                    code: video.code,
+                    language: captionsLang.current,
+                    dedupe: video.youtubeId,
+                  });
+                  captionsLang.current = null;
+                } else if (hasTrack && lang && lang !== captionsLang.current) {
+                  // User switched caption language.
+                  const prevLang = captionsLang.current;
+                  captionsLang.current = lang;
+                  trackEvent("captions_language_changed", {
+                    videoId: video.youtubeId,
+                    from: prevLang,
+                    to: lang,
                   });
                 }
               } catch (err) {
@@ -674,9 +729,16 @@ function EmbeddedPlayer({ video }: { video: Video }) {
           },
         });
       })
-      .catch(() => setFailed(true));
+      .catch(() => {
+        readyEnd({ outcome: "api_load_failed" });
+        setFailed(true);
+      });
     return () => {
       cancelled = true;
+      // If captions never surfaced, close the probe with an outcome so the
+      // debug page shows how long we waited before teardown.
+      captionsProbeEnd.current?.({ outcome: "unmounted" });
+      captionsProbeEnd.current = null;
       try {
         player?.destroy?.();
       } catch {}
@@ -721,6 +783,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
     />
   );
 }
+
 
 
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
