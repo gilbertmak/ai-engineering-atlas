@@ -1,7 +1,94 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
+import { getTranscript } from "@/lib/transcript.functions";
+
+const SCROLL_KEY = "atlas:scroll-v1";
+
+function placeholderThumb(v: Video, token: string) {
+  // Deterministic SVG placeholder when the YouTube thumbnail is unavailable.
+  // Uses the track color and encodes speaker initials + video code so the
+  // card still communicates identity without a fetched image.
+  const initials = v.speaker
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  const color = getComputedStyle(document.documentElement).getPropertyValue(`--${token}`).trim() || "#1a1a2a";
+  const svg = `<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360' role='img'>
+  <defs>
+    <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0%' stop-color='${color}' stop-opacity='0.95'/>
+      <stop offset='100%' stop-color='#0f0f14' stop-opacity='0.95'/>
+    </linearGradient>
+    <pattern id='dots' width='16' height='16' patternUnits='userSpaceOnUse'>
+      <circle cx='1' cy='1' r='1' fill='#ffffff' fill-opacity='0.08'/>
+    </pattern>
+  </defs>
+  <rect width='640' height='360' fill='url(#g)'/>
+  <rect width='640' height='360' fill='url(#dots)'/>
+  <text x='40' y='90' font-family='ui-monospace, monospace' font-size='16' fill='#ffffff' fill-opacity='0.7' letter-spacing='4'>${v.code.toUpperCase()} · ${v.year}</text>
+  <text x='40' y='210' font-family='ui-serif, Georgia, serif' font-size='120' font-weight='700' fill='#ffffff'>${initials || "AI"}</text>
+  <text x='40' y='300' font-family='ui-sans-serif, system-ui' font-size='20' fill='#ffffff' fill-opacity='0.85'>${escapeXml(v.speaker)}</text>
+  <text x='40' y='328' font-family='ui-sans-serif, system-ui' font-size='14' fill='#ffffff' fill-opacity='0.6'>${escapeXml(v.track)}</text>
+</svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function escapeXml(s: string) {
+  return s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c] as string));
+}
+
+function Thumbnail({ video, token, eager }: { video: Video; token: string; eager: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const src = errored
+    ? placeholderThumb(video, token)
+    : `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted" aria-hidden />
+      )}
+      <img
+        src={src}
+        alt=""
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          if (!errored) {
+            setErrored(true);
+            setLoaded(true);
+          }
+        }}
+        className={
+          "h-full w-full object-cover transition-all duration-500 group-hover:scale-[1.03] " +
+          (loaded ? "opacity-100" : "opacity-0")
+        }
+      />
+    </>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)]">
+      <div className="aspect-video animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted" />
+      <div className="flex flex-col gap-3 p-4">
+        <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+        <div className="h-5 w-5/6 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="mt-2 h-3 w-full animate-pulse rounded bg-muted" />
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
