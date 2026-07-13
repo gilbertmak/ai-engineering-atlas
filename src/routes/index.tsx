@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import heroAsset from "@/assets/hero-atlas.png.asset.json";
 import { TRACKS, VIDEOS, type Track, type Video } from "@/data/videos";
 
@@ -109,6 +109,43 @@ function Dashboard() {
     });
   }, [query, track, year]);
 
+  // Progressive rendering: keep initial paint cheap by only mounting a page
+  // of cards at a time. Each card fetches a YouTube thumbnail, so mounting
+  // 40+ at once triggers 40+ image requests, layout work, and hover-state
+  // wiring on first paint. We render PAGE_SIZE and reveal more when a
+  // sentinel scrolls into view (IntersectionObserver — no scroll listeners).
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Reset pagination whenever the filtered set changes so users always start
+  // from the top of the new result list.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, track, year]);
+
+  const visible = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  );
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "600px 0px" }, // preload just before the user reaches it
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, filtered.length]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
@@ -193,7 +230,7 @@ function Dashboard() {
             aria-live="polite"
             className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
           >
-            {String(filtered.length).padStart(2, "0")} results
+            {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")} results
           </span>
         </div>
 
@@ -265,10 +302,13 @@ function Dashboard() {
           </label>
         </div>
 
-        {/* Grid */}
-        <div className="mt-8 grid grid-cols-1 gap-5 pb-24 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((v, i) => {
+        {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((v, i) => {
             const t = TRACKS.find((tr) => tr.name === v.track)!;
+            // Eager-load the first row (LCP candidates); lazy-load the rest so
+            // scrolling through 40+ cards doesn't fire 40+ image requests up front.
+            const eager = i < 3;
             return (
               <button
                 key={v.id}
@@ -280,7 +320,8 @@ function Dashboard() {
                   <img
                     src={`https://i.ytimg.com/vi/${v.youtubeId}/hqdefault.jpg`}
                     alt=""
-                    loading="lazy"
+                    loading={eager ? "eager" : "lazy"}
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                   <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
@@ -314,12 +355,32 @@ function Dashboard() {
                     </span>
                   </div>
                 </div>
-                {/* silence unused index warning */}
-                <span className="hidden">{i}</span>
               </button>
             );
           })}
         </div>
+
+        {/* Sentinel — IntersectionObserver reveals the next page when it
+            approaches the viewport. When exhausted, shows an end marker. */}
+        {hasMore ? (
+          <div
+            ref={sentinelRef}
+            aria-hidden="true"
+            className="mt-10 flex justify-center pb-24"
+          >
+            <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              Loading more talks…
+            </span>
+          </div>
+        ) : (
+          filtered.length > 0 && (
+            <div className="mt-10 flex justify-center pb-24">
+              <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                End of atlas · {filtered.length} talks
+              </span>
+            </div>
+          )
+        )}
 
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
@@ -327,6 +388,7 @@ function Dashboard() {
           </div>
         )}
       </section>
+
 
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
