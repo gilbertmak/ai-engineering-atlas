@@ -109,6 +109,43 @@ function Dashboard() {
     });
   }, [query, track, year]);
 
+  // Progressive rendering: keep initial paint cheap by only mounting a page
+  // of cards at a time. Each card fetches a YouTube thumbnail, so mounting
+  // 40+ at once triggers 40+ image requests, layout work, and hover-state
+  // wiring on first paint. We render PAGE_SIZE and reveal more when a
+  // sentinel scrolls into view (IntersectionObserver — no scroll listeners).
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Reset pagination whenever the filtered set changes so users always start
+  // from the top of the new result list.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, track, year]);
+
+  const visible = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  );
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "600px 0px" }, // preload just before the user reaches it
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, filtered.length]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
