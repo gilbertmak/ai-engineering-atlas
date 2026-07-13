@@ -705,6 +705,14 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
               target="_blank"
               rel="noreferrer"
+              onClick={() =>
+                trackEvent("open_on_youtube_click", {
+                  videoId: video.youtubeId,
+                  code: video.code,
+                  track: video.track,
+                  speaker: video.speaker,
+                })
+              }
               className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
             >
               Open on YouTube
