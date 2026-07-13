@@ -236,10 +236,10 @@ function Dashboard() {
       firstFilterRun.current = false;
       return;
     }
+    // Reset pagination so the new result set starts at PAGE_SIZE, but keep
+    // the user's current scroll position — jumping to top on every keystroke
+    // is jarring while searching.
     setVisibleCount(PAGE_SIZE);
-    // A new result set means the old scroll offset is meaningless.
-    sessionStorage.removeItem(SCROLL_KEY);
-    window.scrollTo({ top: 0 });
   }, [query, track, year]);
 
   const visible = useMemo(
