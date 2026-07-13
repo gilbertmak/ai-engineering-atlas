@@ -176,6 +176,10 @@ function Dashboard() {
   const [year, setYear] = useState<"All" | number>("All");
   const [open, setOpen] = useState<Video | null>(null);
 
+  // Brief initial-load state so users see structure (skeletons) instead of a
+  // pop-in of fully-rendered cards. Also gives images a beat to warm up.
+  const [booting, setBooting] = useState(true);
+
   const years = useMemo(
     () => Array.from(new Set(VIDEOS.map((v) => v.year))).sort((a, b) => b - a),
     [],
@@ -196,19 +200,43 @@ function Dashboard() {
     });
   }, [query, track, year]);
 
-  // Progressive rendering: keep initial paint cheap by only mounting a page
-  // of cards at a time. Each card fetches a YouTube thumbnail, so mounting
-  // 40+ at once triggers 40+ image requests, layout work, and hover-state
-  // wiring on first paint. We render PAGE_SIZE and reveal more when a
-  // sentinel scrolls into view (IntersectionObserver — no scroll listeners).
   const PAGE_SIZE = 12;
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Restore visibleCount from sessionStorage so returning to the page keeps
+  // the same amount of content mounted — otherwise a scroll restore would
+  // land past the end of the rendered grid.
+  const [visibleCount, setVisibleCount] = useState<number>(() => {
+    if (typeof window === "undefined") return PAGE_SIZE;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { count?: number };
+        if (parsed.count && parsed.count > PAGE_SIZE) return parsed.count;
+      }
+    } catch {}
+    return PAGE_SIZE;
+  });
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const restoredScrollRef = useRef(false);
+
+  useEffect(() => {
+    // End the boot skeleton on the next frame after mount.
+    const id = requestAnimationFrame(() => setBooting(false));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Reset pagination whenever the filtered set changes so users always start
-  // from the top of the new result list.
+  // from the top of the new result list. Skip on the very first render so we
+  // don't stomp the restored visibleCount from sessionStorage.
+  const firstFilterRun = useRef(true);
   useEffect(() => {
+    if (firstFilterRun.current) {
+      firstFilterRun.current = false;
+      return;
+    }
     setVisibleCount(PAGE_SIZE);
+    // A new result set means the old scroll offset is meaningless.
+    sessionStorage.removeItem(SCROLL_KEY);
+    window.scrollTo({ top: 0 });
   }, [query, track, year]);
 
   const visible = useMemo(
@@ -227,11 +255,51 @@ function Dashboard() {
           setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
         }
       },
-      { rootMargin: "600px 0px" }, // preload just before the user reaches it
+      { rootMargin: "600px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [hasMore, filtered.length]);
+
+  // Persist scroll position (throttled via rAF) and restore once the grid has
+  // rendered enough cards to reach the saved offset.
+  useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        try {
+          sessionStorage.setItem(
+            SCROLL_KEY,
+            JSON.stringify({ y: window.scrollY, count: visibleCount }),
+          );
+        } catch {}
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [visibleCount]);
+
+  useEffect(() => {
+    if (restoredScrollRef.current || booting) return;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (!raw) {
+        restoredScrollRef.current = true;
+        return;
+      }
+      const { y } = JSON.parse(raw) as { y?: number };
+      if (typeof y === "number" && y > 0) {
+        // Wait a frame so the grid has painted before jumping.
+        requestAnimationFrame(() => window.scrollTo({ top: y }));
+      }
+      restoredScrollRef.current = true;
+    } catch {
+      restoredScrollRef.current = true;
+    }
+  }, [booting]);
 
   useEffect(() => {
     if (!open) return;
@@ -243,6 +311,7 @@ function Dashboard() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
 
   return (
     <div className="min-h-screen bg-paper text-ink">
