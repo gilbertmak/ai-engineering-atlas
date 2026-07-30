@@ -7964,22 +7964,14 @@ function Dashboard() {
               Explore latest industry developments across six practical themes.
             </h1>
           </div>
-          <p className="max-w-xl self-end font-sans text-base leading-relaxed text-muted-foreground md:ml-[10%] md:text-lg">
-            Explore {catalog.records.length} exact, reachable sources across six practical themes,
-            ordered by their YouTube publication date. Transcript-backed evidence is added only
-            after timestamped review, so the atlas keeps its evidence basis visible while the
-            knowledge layer matures.
+          <p className="max-w-xl self-end font-sans text-base leading-relaxed text-muted-foreground md:ml-0 md:text-lg">
+            Explore practical industry insights across six engineering domains. Transcript
+            extraction is still in progress, so the knowledge layer matures over time.
           </p>
         </div>
         <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
-          <strong className="text-ink">Source catalog verified.</strong> Titles, channels,
-          publication dates, durations, and links were checked against YouTube on{" "}
-          {new Date(catalog.verifiedAt).toLocaleDateString("en", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
-          .
+          Source catalog was checked against YouTube on 30 Jul 2026. All rights belong to the
+          respective owners.
         </div>
       </section>
 
