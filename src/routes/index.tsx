@@ -11,6 +11,12 @@ import {
   type Track,
   type Video,
 } from "@/data/videos";
+import {
+  TRACK_EXAMPLES,
+  TRACK_SUMMARIES,
+  type IllustrativeExample,
+} from "@/data/summaries";
+
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 
 const SCROLL_KEY = "atlas:scroll-v1";
