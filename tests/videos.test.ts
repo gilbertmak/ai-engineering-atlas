@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { TRACKS, VIDEOS, videoDuration, videoYear } from "../src/data/videos";
+import { talkInsightForVideo } from "../src/data/talk-insights";
 
 describe("verified video catalog", () => {
   test("uses six unique tracks", () => {
@@ -10,7 +11,7 @@ describe("verified video catalog", () => {
   });
 
   test("contains only complete, unique source records", () => {
-    expect(VIDEOS).toHaveLength(14);
+    expect(VIDEOS).toHaveLength(15);
     expect(new Set(VIDEOS.map((video) => video.id)).size).toBe(VIDEOS.length);
     expect(new Set(VIDEOS.map((video) => video.code)).size).toBe(VIDEOS.length);
     expect(new Set(VIDEOS.map((video) => video.youtubeId)).size).toBe(VIDEOS.length);
@@ -37,10 +38,19 @@ describe("verified video catalog", () => {
           a.youtubeId.localeCompare(b.youtubeId),
       ),
     );
-    expect(VIDEOS[0]?.youtubeId).toBe("SKDJo2CopRs");
+    expect(VIDEOS[0]?.youtubeId).toBe("Yk87oUPVaxU");
   });
 
   test("does not publish the unrelated legacy Zig source", () => {
     expect(VIDEOS.some((video) => video.youtubeId === "kxT8-C1vmd4")).toBe(false);
+  });
+
+  test("restores reviewed insights for the Atlas videos", () => {
+    const deepSwe = VIDEOS.find((video) => video.youtubeId === "Yk87oUPVaxU");
+    const insight = deepSwe && talkInsightForVideo(deepSwe);
+
+    expect(insight?.contentBasis).toBe("transcript_backed");
+    expect(insight?.timestampSeconds).toBe(63);
+    expect(insight?.claim).toContain("contamination-resistant");
   });
 });

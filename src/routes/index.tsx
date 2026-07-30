@@ -1,17 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Clock } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  SOURCE_CATALOG_VERIFIED_AT,
   TRACKS,
   VIDEOS,
   videoDuration,
   videoPublishedDate,
+  videoThemes,
   videoYear,
   type Track,
   type Video,
 } from "@/data/videos";
-import { TRACK_EXAMPLES, TRACK_SUMMARIES, type IllustrativeExample } from "@/data/summaries";
+import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "@/data/summaries";
+import { talkInsightForVideo, type TalkInsight } from "@/data/talk-insights";
 
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 import { siteUrl } from "@/lib/site";
@@ -184,26 +186,9 @@ function isoDuration(totalSeconds: number) {
   return `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}${seconds ? `${seconds}S` : ""}`;
 }
 
-type ContentBasis = "track_synthesis" | "transcript_backed";
-
-type TalkInsight = {
-  claim: string;
-  implication: string;
-  whenToUse: string;
-  caveat: string;
-  example: IllustrativeExample;
-  contentBasis: ContentBasis;
-  timestampSeconds: number | null;
-  reviewedAt: string | null;
-};
-
-// Populate only after a talk has been reviewed against a timestamped source.
-// Until then the UI deliberately falls back to an editorial track synthesis.
-const TALK_INSIGHTS: Partial<Record<Video["id"], TalkInsight>> = {};
-
 function getInsightContent(video: Video): TalkInsight {
   return (
-    TALK_INSIGHTS[video.id] ?? {
+    talkInsightForVideo(video) ?? {
       ...TRACK_SUMMARIES[video.track],
       example: TRACK_EXAMPLES[video.track],
       contentBasis: "track_synthesis",
@@ -864,9 +849,10 @@ function EmbeddedPlayer({ video }: { video: Video }) {
 }
 
 function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
-  const t = TRACKS.find((tr) => tr.name === video.track)!;
+  const themes = videoThemes(video);
   const insight = getInsightContent(video);
-
+  const timestamp = (seconds: number) =>
+    new Date(seconds * 1000).toISOString().slice(seconds >= 3600 ? 11 : 14, 19);
   return (
     <DialogPrimitive.Root
       open
@@ -875,136 +861,83 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed inset-0 z-50 w-full overflow-y-auto overscroll-contain border-ink/20 bg-paper shadow-[0_40px_80px_-20px_rgba(20,20,40,0.55)] focus:outline-none sm:left-1/2 sm:top-1/2 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-[1100px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border">
-          {/* Modal header bar */}
-          <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-ink/15 bg-card/95 px-6 py-3 backdrop-blur-sm">
-            <span
-              className="font-mono text-[11px] uppercase tracking-widest"
-              style={{ color: `var(--${t.token})` }}
-            >
-              {video.code.toUpperCase()} · {t.code} {video.track}
+        <DialogPrimitive.Overlay
+          onClick={onClose}
+          className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm"
+        />
+        <DialogPrimitive.Content className="fixed inset-0 z-50 w-full overflow-y-auto bg-paper focus:outline-none sm:left-1/2 sm:top-1/2 sm:h-[75vh] sm:max-h-[75vh] sm:max-w-[1000px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border">
+          <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-ink/15 bg-card px-6 py-3">
+            <span className="font-mono text-[11px] uppercase tracking-widest text-ink">
+              {themes.length ? `Category: ${themes.join(" · ")}` : "Category: Unassigned"}
             </span>
-            <DialogPrimitive.Close className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:bg-ink/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]">
+            <DialogPrimitive.Close className="min-h-11 rounded-lg px-3 font-mono text-[11px] uppercase tracking-widest">
               Close ✕
             </DialogPrimitive.Close>
           </div>
-
-          {/* Hero row */}
-          <div className="grid grid-cols-1 gap-6 border-b border-ink/15 p-6 md:grid-cols-[1.05fr_1fr] md:p-8">
+          <div className="grid gap-6 border-b border-ink/15 p-6 md:grid-cols-2">
             <div>
-              <DialogPrimitive.Title className="font-display text-3xl leading-[1.02] md:text-4xl">
+              <DialogPrimitive.Title className="font-display text-3xl">
                 {video.title}
               </DialogPrimitive.Title>
-              <DialogPrimitive.Description className="mt-4 font-sans text-sm text-muted-foreground">
-                Source channel: <span className="text-ink">{video.sourceChannel}</span> · published{" "}
-                {videoPublishedDate(video)} · {videoDuration(video)}
+              <DialogPrimitive.Description className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 font-sans text-sm text-muted-foreground">
+                <span>Published {videoPublishedDate(video)}</span>
+                <span aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
+                  <span>{videoDuration(video)}</span>
+                </span>
               </DialogPrimitive.Description>
-              <div className="mt-4 inline-flex rounded-full border border-ink/20 bg-card px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Track synthesis · not a transcript summary
-              </div>
             </div>
-            <div className="relative aspect-video overflow-hidden rounded-xl border border-ink/80 bg-ink shadow-[0_20px_50px_-20px_rgba(20,20,40,0.55)]">
+            <div className="relative aspect-video overflow-hidden rounded-xl bg-ink">
               <EmbeddedPlayer video={video} />
             </div>
           </div>
-
-          {/* Sections */}
-          <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_320px]">
-            <div className="order-2 divide-y divide-ink/10 md:order-1">
-              <Row label="Claim" body={insight.claim} />
-              <Row label="Implication" body={insight.implication} />
-              <Row label="When to use" body={insight.whenToUse} />
-              <Row
-                label="Illustrative example"
-                body={
-                  <div className="rounded-xl border border-ink/20 bg-card p-4 shadow-[0_8px_24px_-16px_rgba(20,20,40,0.35)]">
-                    <div
-                      className="font-mono text-[10px] uppercase tracking-widest"
-                      style={{ color: `var(--${t.token})` }}
-                    >
-                      Editorial scenario · not from the talk
-                    </div>
-                    <div className="mt-3 space-y-3">
-                      <ExamplePart label="Situation" body={insight.example.situation} />
-                      <ExamplePart label="Application" body={insight.example.application} />
-                      <ExamplePart
-                        label="Observable outcome"
-                        body={insight.example.observableOutcome}
-                      />
-                    </div>
-                  </div>
-                }
+          <div className="p-6">
+            <section
+              aria-labelledby={`insight-title-${video.id}`}
+              className="border-b border-ink/15 pb-6"
+            >
+              <h3 id={`insight-title-${video.id}`} className="mt-2 font-display text-xl">
+                Insight
+              </h3>
+              <InsightBody
+                body={`${insight.claim}${
+                  insight.timestampSeconds !== null
+                    ? ` (${timestamp(insight.timestampSeconds)})`
+                    : ""
+                }`}
+                className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
               />
-              <Row
-                label="Caveat"
-                body={<span className="text-[color:var(--track-5)]">{insight.caveat}</span>}
-              />
-            </div>
-
-            {/* Sidebar */}
-            <aside className="order-1 border-b border-ink/15 bg-card p-6 md:order-2 md:border-b-0 md:border-l">
-              <div className="mb-5 rounded-xl border border-ink/20 bg-paper p-4">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Content basis
-                </div>
-                <div className="mt-2 font-display text-base">Editorial track synthesis</div>
-                <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
-                  The claim, implication, caveat, and example are not attributed to this speaker.
-                  Transcript-backed notes require a reviewed timestamp.
-                </p>
+              <div className="mt-5 space-y-5">
+                <ExamplePart label="Why it matters" body={insight.implication} divider={false} />
+                <ExamplePart label="Use it when" body={insight.whenToUse} divider={false} />
               </div>
-              <SideBlock label="Track">
-                <span
-                  className="inline-flex items-center gap-2 font-display text-base"
-                  style={{ color: `var(--${t.token})` }}
-                >
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ background: `var(--${t.token})` }}
-                  />
-                  {t.code} · {video.track}
-                </span>
-              </SideBlock>
-              <SideBlock label="YouTube source">
-                <div className="font-display text-base">{video.sourceChannel}</div>
-                <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Exact YouTube metadata
+              <div className="mt-5 border-t border-ink/10 pt-4">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Caveat
                 </div>
-              </SideBlock>
-              <SideBlock label="Record status">
-                <div className="font-sans text-sm">Published: {videoPublishedDate(video)}</div>
-                <div className="font-sans text-sm">Duration: {videoDuration(video)}</div>
-                <div className="font-sans text-sm">Code: {video.code}</div>
-                <div className="font-sans text-sm">Review: source metadata verified</div>
-                <div className="font-sans text-sm">
-                  Verified:{" "}
-                  {new Date(SOURCE_CATALOG_VERIFIED_AT).toLocaleDateString("en", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </div>
-              </SideBlock>
-
-              <a
-                href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() =>
-                  trackEvent("open_on_youtube_click", {
-                    videoId: video.youtubeId,
-                    code: video.code,
-                    track: video.track,
-                    sourceChannel: video.sourceChannel,
-                  })
-                }
-                className="mt-2 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_10px_24px_-12px_rgba(20,20,40,0.6)] transition-transform hover:-translate-y-[1px]"
-              >
-                Open source on YouTube
-                <span>↗</span>
-              </a>
-            </aside>
+                <InsightBody
+                  body={insight.caveat}
+                  className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground"
+                />
+              </div>
+            </section>
+            <a
+              href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() =>
+                trackEvent("open_on_youtube_click", {
+                  videoId: video.youtubeId,
+                  code: video.code,
+                  track: video.track,
+                  sourceChannel: video.sourceChannel,
+                })
+              }
+              className="mt-6 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper"
+            >
+              Open on YouTube <span>↗</span>
+            </a>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -1012,35 +945,40 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
   );
 }
 
-function ExamplePart({ label, body }: { label: string; body: string }) {
+function ExamplePart({
+  label,
+  body,
+  divider = true,
+}: {
+  label: string;
+  body: string;
+  divider?: boolean;
+}) {
   return (
-    <div className="border-t border-ink/10 pt-3 first:border-t-0 first:pt-0">
+    <div className={divider ? "border-t border-ink/10 pt-3" : "pt-0"}>
       <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <p className="mt-1 font-sans text-sm leading-relaxed text-ink">{body}</p>
+      <InsightBody body={body} className="mt-1 font-sans text-sm leading-relaxed text-ink" />
     </div>
   );
 }
 
-function Row({ label, body }: { label: string; body: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 gap-3 px-6 py-5 md:grid-cols-[140px_1fr] md:px-8">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-      <div className="font-sans text-[15px] leading-relaxed text-ink">{body}</div>
-    </div>
-  );
-}
+function InsightBody({ body, className }: { body: string; className: string }) {
+  const points = body
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
+    .map((point) => point.trim())
+    .filter(Boolean);
 
-function SideBlock({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-5 border-b border-ink/10 pb-4 last:border-b-0">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-2">{children}</div>
-    </div>
-  );
+  if (points.length > 1) {
+    return (
+      <ol className={`${className} list-decimal space-y-2 pl-5`}>
+        {points.map((point, index) => (
+          <li key={`${index}-${point}`}>{point}</li>
+        ))}
+      </ol>
+    );
+  }
+
+  return <p className={className}>{body}</p>;
 }

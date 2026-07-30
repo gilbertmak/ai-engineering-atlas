@@ -18,6 +18,13 @@ dist-ssr
 *.local
 *.tsbuildinfo
 
+# Local Atlas projection, transcript evidence and discovery state are private
+# working data. They must never be staged or exposed through the public app.
+data/atlas-catalog-projection.json
+data/transcript-evidence/
+data/youtube-discovery-candidates.json
+data/youtube-discovery-state.json
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
