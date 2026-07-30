@@ -2,7 +2,7 @@ import type { ToolContext } from "@lovable.dev/mcp-js";
 
 type ToolResult = {
   content: Array<{ type: "text"; text: string }>;
-  structuredContent?: unknown;
+  structuredContent?: Record<string, unknown>;
   isError?: boolean;
 };
 
