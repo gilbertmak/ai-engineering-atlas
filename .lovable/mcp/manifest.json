@@ -34,7 +34,7 @@
               "type": "string"
             },
             "track": {
-              "description": "Filter by track: System Design, Data & Eval, Reliability, Observability, Safety & Control, Deployment.",
+              "description": "Filter by track: System Design, Data & Eval, Reliability, Observability, Safety & Control, Deployment, Knowledge, Developer Workflows, Models & Training.",
               "type": "string"
             },
             "year": {
@@ -80,7 +80,7 @@
       {
         "name": "list_tracks",
         "title": "List tracks",
-        "description": "List the six AI engineering tracks with talk counts and, optionally, the editorial synthesis for each track.",
+        "description": "List the nine AI engineering themes with talk counts and, optionally, the editorial synthesis for each theme.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = "https://ai-engineer-atlas.lovable.app";
+const DEFAULT_SITE_URL = "https://ai-engineering-insights-atlas.lovable.app";
 
 export const SITE_URL = (import.meta.env.VITE_SITE_URL?.trim() || DEFAULT_SITE_URL).replace(
   /\/+$/,
