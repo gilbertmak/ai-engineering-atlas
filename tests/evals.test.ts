@@ -84,7 +84,7 @@ describe("Atlas release evals", () => {
     for (const requiredToken of [
       "const PAGE_SIZE = 12",
       "IntersectionObserver",
-      "Load more",
+      "Load {Math.min",
       "Category:",
       "<Clock",
       "sm:h-[75vh]",

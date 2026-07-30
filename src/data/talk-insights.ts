@@ -1,4 +1,4 @@
-import type { Video } from "./videos";
+import { VIDEOS, type Video } from "./videos";
 
 export type IllustrativeExample = {
   situation: string;
@@ -7326,5 +7326,10 @@ export const TALK_INSIGHTS: Partial<Record<Video["id"], TalkInsight>> = {
 
 
 export function talkInsightForVideo(video: Pick<Video, "id" | "youtubeId">) {
-  return TALK_INSIGHTS[video.id] ?? TALK_INSIGHTS[`youtube-${video.youtubeId}`];
+  const legacyId = VIDEOS.find((candidate) => candidate.youtubeId === video.youtubeId)?.id;
+  return (
+    TALK_INSIGHTS[video.id] ??
+    TALK_INSIGHTS[`youtube-${video.youtubeId}`] ??
+    (legacyId ? TALK_INSIGHTS[legacyId] : undefined)
+  );
 }
