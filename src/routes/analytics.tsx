@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { clearRecentEvents, getRecentEvents, subscribe, type LoggedEvent } from "@/lib/analytics";
+import { siteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/analytics")({
   head: () => ({
+    links: [{ rel: "canonical", href: siteUrl("/analytics") }],
     meta: [
       { title: "Analytics debug · Video Atlas" },
       {

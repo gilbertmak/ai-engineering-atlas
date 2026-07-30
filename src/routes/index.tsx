@@ -11,13 +11,10 @@ import {
   type Track,
   type Video,
 } from "@/data/videos";
-import {
-  TRACK_EXAMPLES,
-  TRACK_SUMMARIES,
-  type IllustrativeExample,
-} from "@/data/summaries";
+import { TRACK_EXAMPLES, TRACK_SUMMARIES, type IllustrativeExample } from "@/data/summaries";
 
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
+import { siteUrl } from "@/lib/site";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
@@ -118,20 +115,74 @@ function CardSkeleton() {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/") },
       {
         property: "og:image",
-        content:
-          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
+        content: siteUrl("/hero-atlas.webp"),
       },
       {
         name: "twitter:image",
-        content:
-          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
+        content: siteUrl("/hero-atlas.webp"),
       },
+      {
+        "script:ld+json": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "@id": `${siteUrl("/")}#website`,
+              url: siteUrl("/"),
+              name: "AI Engineering Insight Atlas",
+              description: "Explore practical industry insights across six engineering domains.",
+              inLanguage: "en",
+            },
+            {
+              "@type": "CollectionPage",
+              "@id": `${siteUrl("/")}#collection`,
+              url: siteUrl("/"),
+              name: "AI Engineering Insight Atlas",
+              isPartOf: { "@id": `${siteUrl("/")}#website` },
+              mainEntity: { "@id": `${siteUrl("/")}#talks` },
+            },
+            {
+              "@type": "ItemList",
+              "@id": `${siteUrl("/")}#talks`,
+              name: "AI engineering talks",
+              numberOfItems: VIDEOS.length,
+              itemListElement: VIDEOS.map((video, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                url: `https://www.youtube.com/watch?v=${video.youtubeId}`,
+                item: {
+                  "@type": "VideoObject",
+                  name: video.title,
+                  description: `${video.title} from ${video.sourceChannel}.`,
+                  uploadDate: video.publishedAt,
+                  duration: isoDuration(video.durationSeconds),
+                  thumbnailUrl: `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`,
+                  contentUrl: `https://www.youtube.com/watch?v=${video.youtubeId}`,
+                  embedUrl: `https://www.youtube.com/embed/${video.youtubeId}`,
+                },
+              })),
+            },
+          ],
+        },
+      },
+    ],
+    links: [
+      { rel: "canonical", href: siteUrl("/") },
+      { rel: "preload", href: "/hero-atlas.webp", as: "image", fetchPriority: "high" },
     ],
   }),
   component: Dashboard,
 });
+
+function isoDuration(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}${seconds ? `${seconds}S` : ""}`;
+}
 
 type ContentBasis = "track_synthesis" | "transcript_backed";
 
@@ -145,7 +196,6 @@ type TalkInsight = {
   timestampSeconds: number | null;
   reviewedAt: string | null;
 };
-
 
 // Populate only after a talk has been reviewed against a timestamped source.
 // Until then the UI deliberately falls back to an editorial track synthesis.
@@ -329,50 +379,43 @@ function Dashboard() {
           <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
             AI/E
           </span>
-          <span className="font-display text-sm font-medium tracking-tight">Video Atlas</span>
-        </a>
-        <a
-          href="https://www.youtube.com/@aiDotEngineer"
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-[11px] uppercase tracking-widest text-ink hover:underline"
-        >
-          Channel ↗
+          <span className="font-display text-sm font-medium tracking-tight">
+            AI Engineering Insights Atlas
+          </span>
         </a>
       </header>
 
       {/* HERO */}
       <section
         id="top"
-        aria-label="AI Engineer Video Atlas introduction"
+        aria-label="AI Engineering Insight Atlas introduction"
         className="mx-auto max-w-[1400px] px-6 pt-8"
       >
         <div className="crosshair rounded-xl border border-ink/90 bg-paper p-3 shadow-[0_20px_60px_-20px_rgba(20,20,40,0.25)] md:p-5">
-          <img
-            src="/hero-atlas.png"
-            alt="AI Engineer Video Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
-            width={1731}
-            height={909}
-            className="block h-auto w-full rounded-lg border border-ink/80"
-          />
+          <picture>
+            <source srcSet="/hero-atlas.webp" type="image/webp" />
+            <img
+              src="/hero-atlas.png"
+              alt="AI Engineering Insight Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
+              width={1731}
+              height={909}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="block h-auto w-full rounded-lg border border-ink/80"
+            />
+          </picture>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 border-b border-ink/20 pb-10 md:grid-cols-[1fr_1.15fr] md:gap-12">
-          <div>
-            <h1 className="font-display text-3xl leading-[0.95] md:text-5xl">
-              A working map of AI engineering talks and production patterns.
-            </h1>
-          </div>
-          <p className="max-w-xl self-end font-sans text-base leading-relaxed text-muted-foreground md:ml-[10%] md:text-lg">
-            Explore 14 exact, reachable sources across six practical tracks, ordered by their
-            YouTube publication date. Transcript-backed insight extraction is still in progress, so
-            the atlas keeps the evidence basis visible while the knowledge layer matures.
+        <div className="mt-6 border-b border-ink/20 pb-10">
+          <h1 className="sr-only">AI Engineering Insight Atlas</h1>
+          <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
+            Explore practical industry insights across six engineering domains. Transcript
+            extraction is still in progress, so the knowledge layer matures over time.
           </p>
         </div>
         <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
-          <strong className="text-ink">Source catalog verified.</strong> Titles, channels,
-          publication dates, durations, and links were checked against YouTube on 14 Jul 2026. Modal
-          insights remain explicitly labelled as editorial track syntheses, not speaker-attributed
-          transcript summaries.
+          Source catalog was checked against YouTube on 30 Jul 2026. All rights belong to the
+          respective owners.
         </div>
       </section>
 
