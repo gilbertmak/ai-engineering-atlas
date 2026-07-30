@@ -1,4 +1,0 @@
-interface:
-  display_name: "Atlas Transcript Batch"
-  short_description: "Paced resumable Atlas transcript extraction"
-  default_prompt: "Use $atlas-transcript-batch to process the next Atlas transcript batch with bounded pacing, checkpoints and guaranteed browser cleanup."
