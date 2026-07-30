@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "description": "Approved public Atlas catalog baseline. Update this file in the same reviewed change when a video is intentionally added, removed or corrected.",
+  "videos": [
+    {
+      "id": "v25",
+      "code": "aie-025",
+      "youtubeId": "Yk87oUPVaxU",
+      "title": "DeepSWE: A Contamination-Resistant Coding Benchmark — James Shi, Datacurve",
+      "sourceChannel": "AI Engineer",
+      "track": "Data & Eval",
+      "publishedAt": "2026-07-26T11:10:56-07:00",
+      "durationSeconds": 1054
+    },
+    {
+      "id": "v21",
+      "code": "aie-021",
+      "youtubeId": "SKDJo2CopRs",
+      "title": "Why Eval++ Is the Next Great Compute Primitive — Sunil Pai & Matt Carey, Cloudflare",
+      "sourceChannel": "AI Engineer",
+      "track": "Data & Eval",
+      "publishedAt": "2026-06-08T06:00:13-07:00",
+      "durationSeconds": 1490
+    },
+    {
+      "id": "v23",
+      "code": "aie-023",
+      "youtubeId": "yUmS-F9IX90",
+      "title": "Don't Build Slop (4 Levels of AI Agent Maturity) - Ara Khan, Cline",
+      "sourceChannel": "AI Engineer",
+      "track": "Reliability",
+      "publishedAt": "2026-05-19T08:00:06-07:00",
+      "durationSeconds": 1131
+    },
+    {
+      "id": "v22",
+      "code": "aie-022",
+      "youtubeId": "CEvIs9y1uog",
+      "title": "Don't Build Agents, Build Skills Instead – Barry Zhang & Mahesh Murag, Anthropic",
+      "sourceChannel": "AI Engineer",
+      "track": "System Design",
+      "publishedAt": "2025-12-08T09:30:06-08:00",
+      "durationSeconds": 982
+    },
+    {
+      "id": "v18",
+      "code": "aie-018",
+      "youtubeId": "d5EltXhbcfA",
+      "title": "Building and evaluating AI Agents — Sayash Kapoor, AI Snake Oil",
+      "sourceChannel": "AI Engineer",
+      "track": "Data & Eval",
+      "publishedAt": "2025-04-17T09:00:06-07:00",
+      "durationSeconds": 1199
+    },
+    {
+      "id": "v17",
+      "code": "aie-017",
+      "youtubeId": "kPL-6-9MVyA",
+      "title": "RAG Agents in Prod: 10 Lessons We Learned — Douwe Kiela, creator of RAG",
+      "sourceChannel": "AI Engineer",
+      "track": "Reliability",
+      "publishedAt": "2025-04-10T12:47:37-07:00",
+      "durationSeconds": 1016
+    },
+    {
+      "id": "v04",
+      "code": "aie-004",
+      "youtubeId": "D7_ipDqhtwk",
+      "title": "How We Build Effective Agents: Barry Zhang, Anthropic",
+      "sourceChannel": "AI Engineer",
+      "track": "System Design",
+      "publishedAt": "2025-04-04T11:46:36-07:00",
+      "durationSeconds": 909
+    },
+    {
+      "id": "v19",
+      "code": "aie-019",
+      "youtubeId": "-rsTkYgnNzM",
+      "title": "Rethinking how we Scaffold AI Agents - Rahul Sengottuvelu, Ramp",
+      "sourceChannel": "AI Engineer",
+      "track": "System Design",
+      "publishedAt": "2025-03-19T10:09:54-07:00",
+      "durationSeconds": 992
+    },
+    {
+      "id": "v24",
+      "code": "aie-024",
+      "youtubeId": "7wwWRph3Jls",
+      "title": "Agent Engineering with Pydantic + Graphs — with Samuel Colvin, CEO of Pydantic Logfire",
+      "sourceChannel": "Latent Space",
+      "track": "Reliability",
+      "publishedAt": "2025-02-06T14:58:45-08:00",
+      "durationSeconds": 3735
+    },
+    {
+      "id": "v20",
+      "code": "aie-020",
+      "youtubeId": "nbZzSC5A6hs",
+      "title": "Lessons from the Trenches: Building LLM Evals That Work IRL: Aparna Dhinkaran",
+      "sourceChannel": "AI Engineer",
+      "track": "Data & Eval",
+      "publishedAt": "2025-02-06T01:24:01-08:00",
+      "durationSeconds": 1129
+    },
+    {
+      "id": "v06",
+      "code": "aie-006",
+      "youtubeId": "T9aRN5JkmL8",
+      "title": "AI prompt engineering: A deep dive",
+      "sourceChannel": "Anthropic",
+      "track": "Reliability",
+      "publishedAt": "2024-09-05T10:00:19-07:00",
+      "durationSeconds": 4602
+    },
+    {
+      "id": "v08",
+      "code": "aie-008",
+      "youtubeId": "0nA5QG3087g",
+      "title": "Beyond the Basics of Retrieval for Augmenting Generation (w/ Ben Clavié)",
+      "sourceChannel": "Hamel Husain",
+      "track": "Reliability",
+      "publishedAt": "2024-06-15T14:59:49-07:00",
+      "durationSeconds": 2925
+    },
+    {
+      "id": "v12",
+      "code": "aie-012",
+      "youtubeId": "TRjq7t2Ms5I",
+      "title": "Building Production-Ready RAG Applications: Jerry Liu",
+      "sourceChannel": "AI Engineer",
+      "track": "Reliability",
+      "publishedAt": "2023-11-15T11:46:23-08:00",
+      "durationSeconds": 1114
+    },
+    {
+      "id": "v03",
+      "code": "aie-003",
+      "youtubeId": "yj-wSRJwrrc",
+      "title": "Pydantic is all you need: Jason Liu",
+      "sourceChannel": "AI Engineer",
+      "track": "Reliability",
+      "publishedAt": "2023-11-01T09:27:08-07:00",
+      "durationSeconds": 1075
+    },
+    {
+      "id": "v05",
+      "code": "aie-005",
+      "youtubeId": "r-HUnht-Gns",
+      "title": "Evaluating LLM-based Applications // Josh Tobin // LLMs in Prod Conference Part 2",
+      "sourceChannel": "MLOps.community",
+      "track": "Data & Eval",
+      "publishedAt": "2023-07-12T02:55:55-07:00",
+      "durationSeconds": 2990
+    }
+  ]
+}

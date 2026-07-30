@@ -109,14 +109,15 @@ custom deployment origin.
 
 ## Validation commands
 
-| Command                  | Purpose                            |
-| ------------------------ | ---------------------------------- |
-| `npm run typecheck`      | Check TypeScript types             |
-| `npm run lint`           | Run ESLint                         |
-| `npm test`               | Run the Bun test suite             |
-| `npm run build`          | Build the production application   |
-| `npm run verify:sources` | Verify catalog source metadata     |
-| `npm run format`         | Format project files with Prettier |
+| Command                  | Purpose                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| `npm run typecheck`      | Check TypeScript types                                                                     |
+| `npm run lint`           | Run ESLint                                                                                 |
+| `npm test`               | Run the Bun test suite                                                                     |
+| `npm run evals:validate` | Run the catalog, insight, architecture and privacy gates and write a revision-bound report |
+| `npm run build`          | Build the production application                                                           |
+| `npm run verify:sources` | Verify catalog source metadata                                                             |
+| `npm run format`         | Format project files with Prettier                                                         |
 
 ## MCP tools
 
@@ -148,6 +149,8 @@ Before release, verify that:
 - MCP tools return only the intended read-only catalog data.
 - Source and transcript claims have the required review evidence.
 - Canonical and social URLs point to the final deployment origin.
+- `evals/requirements.md`, `evals/manifest.json` and `evals/catalog-baseline.json` match the intended catalog and release scope.
+- `artifacts/evals/eval-report.json` is attached to the exact revision and any manual OAuth/browser evidence remains explicitly pending or attached.
 
 ## Contribution guardrails
 
@@ -155,5 +158,7 @@ Before release, verify that:
 - Do not expose service-role credentials to browser modules.
 - Do not add a transcript-backed claim without approved timestamped evidence.
 - Keep YouTube source links and rights notices intact.
+- Update the independent catalog baseline and insight coverage in the same change as any intentional video addition, removal or correction.
+- Treat a missing baseline record, missing video-specific insight or lost MCP/OAuth/Supabase path as a release-blocking regression.
 - Do not hand-edit `src/routeTree.gen.ts`; regenerate it through the normal TanStack build.
 - Run typecheck, lint, tests and the production build before merging.
