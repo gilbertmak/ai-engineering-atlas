@@ -17,13 +17,13 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     links: [{ rel: "canonical", href: siteUrl("/auth") }],
     meta: [
-      { title: "Sign in · AI Engineering Insights" },
+      { title: "Sign in · AI Engineering Insights Atlas" },
       {
         name: "description",
         content:
-          "Sign in to AI Engineering Insights to connect the talk catalog to your AI assistant over MCP.",
+          "Sign in to AI Engineering Insights Atlas to connect the talk catalog to your AI assistant over MCP.",
       },
-      { property: "og:title", content: "Sign in · AI Engineering Insights" },
+      { property: "og:title", content: "Sign in · AI Engineering Insights Atlas" },
       {
         property: "og:description",
         content: "Sign in to connect the AI engineering talk catalog to your AI assistant.",
@@ -96,7 +96,7 @@ function AuthPage() {
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
         <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          AI Engineering Insights
+          AI Engineering Insights Atlas
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">
           {mode === "signin" ? "Sign in" : "Create an account"}
