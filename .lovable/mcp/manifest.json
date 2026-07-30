@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "sdk_version": "0.25.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "ai-engineering-summary",
+      "version": "0.1.0",
+      "title": "AI Engineering Summary"
+    },
+    "tools": [
+      {
+        "name": "search_talks",
+        "title": "Search talks",
+        "description": "Search the verified catalog of AI engineering conference talks by free text, track, and year.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Free-text match against talk title, channel, or track.",
+              "type": "string"
+            },
+            "track": {
+              "description": "Filter by track: System Design, Data & Eval, Reliability, Observability, Safety & Control, Deployment.",
+              "type": "string"
+            },
+            "year": {
+              "description": "Filter by publication year (UTC).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "limit": {
+              "description": "Maximum number of results (default 20).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_talk_summary",
+        "title": "Get talk summary",
+        "description": "Return the full editorial summary for one talk: claim, implication, when to use, caveat, and a worked example, plus source metadata.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Talk id (e.g. v21), catalog code (e.g. aie-021), or YouTube video id."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_tracks",
+        "title": "List tracks",
+        "description": "List the six AI engineering tracks with talk counts and, optionally, the editorial synthesis for each track.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "includeSummaries": {
+              "description": "Include the claim/implication/when-to-use/caveat synthesis for each track.",
+              "type": "boolean"
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
