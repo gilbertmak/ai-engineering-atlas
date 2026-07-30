@@ -7925,7 +7925,7 @@ function Dashboard() {
           <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
             AI/E
           </span>
-          <span className="font-display text-sm font-medium tracking-tight">Video Atlas</span>
+          <span className="font-display text-sm font-medium tracking-tight">AI Engineering Insights Atlas</span>
         </a>
       </header>
 
