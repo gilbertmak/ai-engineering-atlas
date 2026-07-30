@@ -61,6 +61,23 @@
       "releaseImpact": "blocker"
     },
     {
+      "id": "EVAL-PERF-001",
+      "title": "Initial gallery payload boundary",
+      "requirementRefs": ["ATLAS-PERF-001", "ATLAS-UI-001"],
+      "gateType": "binary",
+      "blocking": true,
+      "status": "pending",
+      "owner": "Engineering + QA",
+      "priority": "P0",
+      "automation": "bun-static",
+      "command": "bun test tests/evals.test.ts",
+      "testOrFixture": "tests/evals.test.ts + src/routes/index.tsx + docs/performance.md",
+      "passCriteria": "The gallery retains 12-record infinite-scroll pages and imports long-form talk insights only when a reviewed modal opens.",
+      "privacyClassification": "public-performance-metadata",
+      "evidencePath": "artifacts/evals/EVAL-PERF-001.json",
+      "releaseImpact": "blocker"
+    },
+    {
       "id": "EVAL-ARCH-001",
       "title": "Lovable MCP, OAuth and Supabase architecture preservation",
       "requirementRefs": ["ATLAS-ARCH-001"],

@@ -103,6 +103,14 @@ describe("Atlas release evals", () => {
       expect(source).not.toContain(removedToken);
   });
 
+  test("long-form insights are deferred until a reviewed modal opens", () => {
+    expect(source).toContain('import("@/data/talk-insights")');
+    expect(source).not.toContain(
+      'import { TALK_INSIGHTS, type IllustrativeExample, type TalkInsight } from "@/data/talk-insights"',
+    );
+    expect(source).toContain('aria-label="Loading reviewed insight"');
+  });
+
   test("Lovable MCP, OAuth and Supabase paths remain present", () => {
     for (const path of [
       "src/routes/mcp.ts",

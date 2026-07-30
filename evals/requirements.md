@@ -14,6 +14,7 @@ This file is the review contract for changes that touch the public catalog, insi
 | `ATLAS-ARCH-001` Integration preservation | Catalog changes must preserve the Lovable MCP discovery/list/invoke routes, OAuth routes and Supabase integration boundaries.                                                                    | Blocker        |
 | `ATLAS-SEC-001` Private-data boundary     | Local transcript evidence, projection snapshots, discovery queues, credentials and private reviewer material are ignored and absent from tracked files.                                          | Blocker        |
 | `ATLAS-REL-001` Deterministic behaviour   | Catalog ordering, six-track vocabulary and baseline comparisons are deterministic and covered without live YouTube calls.                                                                        | Blocker        |
+| `ATLAS-PERF-001` Initial loading boundary | Long-form talk insights are excluded from the initial gallery route and loaded only after a reviewed modal opens. Infinite-scroll pagination remains 12 records per increment.                    | Blocker        |
 | `ATLAS-EVID-001` Revision-bound evidence  | CI records the exact revision and runs the eval validator, typecheck, tests and production build. A manifest declaration alone is not a passing result.                                          | Blocker        |
 
 ## Change protocol

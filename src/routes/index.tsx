@@ -14,7 +14,7 @@ import {
   type Video,
 } from "@/data/videos";
 import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
-import { TALK_INSIGHTS, type IllustrativeExample, type TalkInsight } from "@/data/talk-insights";
+import type { IllustrativeExample, TalkInsight } from "@/data/talk-insights";
 import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 import { siteUrl } from "@/lib/site";
@@ -306,17 +306,8 @@ const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
 
 // Populate only after a talk has been reviewed against a timestamped source.
 // Until then the UI deliberately falls back to an editorial track synthesis.
-const TALK_INSIGHTS_BY_YOUTUBE_ID = new Map(
-  VIDEOS.flatMap((video) => {
-    const insight = TALK_INSIGHTS[video.id];
-    return insight ? ([[video.youtubeId, insight]] as const) : [];
-  }),
-);
-
-function getInsightContent(video: CatalogVideo): TalkInsight {
+function getInsightContent(video: CatalogVideo, reviewedInsight?: TalkInsight): TalkInsight {
   const primaryTopic = video.track ?? videoTracks(video)[0];
-  const reviewedInsight =
-    TALK_INSIGHTS[video.id] ?? TALK_INSIGHTS_BY_YOUTUBE_ID.get(video.youtubeId);
   const approvedEvidence = (video.evidence ?? []).filter(
     (evidence) =>
       evidence.status === "approved" &&
@@ -412,7 +403,7 @@ function Dashboard() {
   }>(() => ({
     records: LAST_KNOWN_GOOD_CATALOG,
     source: "public_snapshot" as const,
-    verifiedAt: "2026-07-14T00:00:00+08:00",
+    verifiedAt: "2026-07-30T00:00:00+08:00",
   }));
   const [query, setQuery] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<Track[]>([]);
@@ -430,13 +421,19 @@ function Dashboard() {
   const [booting, setBooting] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     void loadAtlasCatalog().then((result) => {
-      setCatalog({
-        records: result.records,
-        source: result.source,
-        verifiedAt: result.manifest.sourceCatalogVerifiedAt,
-      });
+      if (!cancelled) {
+        setCatalog({
+          records: result.records,
+          source: result.source,
+          verifiedAt: result.manifest.sourceCatalogVerifiedAt,
+        });
+      }
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const years = useMemo(
@@ -481,9 +478,8 @@ function Dashboard() {
     } catch {
       // Session storage is optional; continue with the default page size.
     }
-    // End the boot skeleton on the next frame after mount.
-    const id = requestAnimationFrame(() => setBooting(false));
-    return () => cancelAnimationFrame(id);
+    const frame = requestAnimationFrame(() => setBooting(false));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Reset pagination whenever the filtered set changes so users always start
@@ -1147,7 +1143,24 @@ function EmbeddedPlayer({ video }: { video: Video }) {
 
 function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => void }) {
   const themes = videoThemes(video);
-  const insight = getInsightContent(video);
+  const [insight, setInsight] = useState<TalkInsight | null>(() =>
+    video.insightReviewStatus === "approved" ? null : getInsightContent(video),
+  );
+  useEffect(() => {
+    let cancelled = false;
+    if (video.insightReviewStatus !== "approved") {
+      setInsight(getInsightContent(video));
+      return;
+    }
+    setInsight(null);
+    void import("@/data/talk-insights").then(({ talkInsightForVideo }) => {
+      if (!cancelled)
+        setInsight(getInsightContent(video, talkInsightForVideo(video)));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [video]);
   const timestamp = (seconds: number) =>
     new Date(seconds * 1000).toISOString().slice(seconds >= 3600 ? 11 : 14, 19);
   return (
@@ -1197,27 +1210,39 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
               <h3 id={`insight-title-${video.id}`} className="mt-2 font-display text-xl">
                 Insight
               </h3>
-              <InsightBody
-                body={`${insight.claim}${
-                  insight.timestampSeconds !== null
-                    ? ` (${timestamp(insight.timestampSeconds)})`
-                    : ""
-                }`}
-                className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
-              />
-              <div className="mt-5 space-y-5">
-                <ExamplePart label="Why it matters" body={insight.implication} divider={false} />
-                <ExamplePart label="Use it when" body={insight.whenToUse} divider={false} />
-              </div>
-              <div className="mt-5 border-t border-ink/10 pt-4">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Caveat
+              {insight ? (
+                <>
+                  <InsightBody
+                    body={`${insight.claim}${
+                      insight.timestampSeconds !== null
+                        ? ` (${timestamp(insight.timestampSeconds)})`
+                        : ""
+                    }`}
+                    className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
+                  />
+                  <div className="mt-5 space-y-5">
+                    <ExamplePart label="Why it matters" body={insight.implication} divider={false} />
+                    <ExamplePart label="Use it when" body={insight.whenToUse} divider={false} />
+                  </div>
+                  <div className="mt-5 border-t border-ink/10 pt-4">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                      Caveat
+                    </div>
+                    <InsightBody
+                      body={insight.caveat}
+                      className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div
+                  aria-live="polite"
+                  className="mt-3 h-24 animate-pulse rounded-xl bg-muted"
+                  aria-label="Loading reviewed insight"
+                >
+                  <span className="sr-only">Loading reviewed insight</span>
                 </div>
-                <InsightBody
-                  body={insight.caveat}
-                  className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground"
-                />
-              </div>
+              )}
             </section>
             <a
               href={`https://www.youtube.com/watch?v=${video.youtubeId}`}

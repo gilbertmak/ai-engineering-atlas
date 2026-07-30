@@ -12,9 +12,8 @@ export type CatalogLoadResult = {
 };
 
 /**
- * The reviewed public snapshot is bundled with the Lovable build so the Atlas
- * does not depend on a private filesystem projection or an unauthenticated
- * runtime catalog endpoint.
+ * The approved catalog stays local to the build so the gallery and MCP tools
+ * use the same reviewed projection without a second network round trip.
  */
 export async function loadAtlasCatalog(): Promise<CatalogLoadResult> {
   return {
