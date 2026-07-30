@@ -22,9 +22,18 @@ dist-ssr
 !.env.example
 artifacts/evals/
 
+# Local SDLC evidence and handoffs. Keep these available to local delivery
+# work, but do not publish them with the product source.
+/evals/
+/subagent-decisions/
+/subagent decisions/
+scripts/validate-evals.ts
+tests/evals.test.ts
+
 # Local Atlas projection, transcript evidence and discovery state are private
 # working data. They must never be staged or exposed through the public app.
 data/atlas-catalog-projection.json
+data/rejected-youtube-sources.json
 data/transcript-evidence/
 data/youtube-discovery-candidates.json
 data/youtube-discovery-state.json

@@ -4,7 +4,30 @@ export type Track =
   | "Reliability"
   | "Observability"
   | "Safety & Control"
-  | "Deployment";
+  | "Deployment"
+  | "Knowledge"
+  | "Developer Workflows"
+  | "Models & Training";
+
+export type AtlasTag =
+  | "rag-retrieval"
+  | "context-engineering"
+  | "memory"
+  | "knowledge-graphs"
+  | "agentic-coding"
+  | "developer-tools"
+  | "software-factories"
+  | "model-training"
+  | "post-training"
+  | "synthetic-data"
+  | "inference"
+  | "evals-benchmarks"
+  | "security-governance"
+  | "observability"
+  | "deployment-platform"
+  | "multimodal"
+  | "voice-ai"
+  | "product-ux";
 
 export type Video = {
   id: string;
@@ -14,6 +37,7 @@ export type Video = {
   track: Track | null;
   tracks?: Track[];
   themes?: Track[];
+  tags?: AtlasTag[];
   themeClassification?: ThemeClassification | null;
   transcript?: TranscriptSummary;
   evidence?: TranscriptEvidence[];
@@ -73,6 +97,10 @@ export function videoThemes(video: Pick<Video, "track" | "tracks" | "themes">): 
   return [...new Set(video.themes ?? videoTracks(video))];
 }
 
+export function videoTags(video: Pick<Video, "tags">): AtlasTag[] {
+  return [...new Set(video.tags ?? [])];
+}
+
 export const TRACKS: { code: string; name: Track; token: string }[] = [
   { code: "01", name: "System Design", token: "track-1" },
   { code: "02", name: "Data & Eval", token: "track-2" },
@@ -80,6 +108,9 @@ export const TRACKS: { code: string; name: Track; token: string }[] = [
   { code: "04", name: "Observability", token: "track-4" },
   { code: "05", name: "Safety & Control", token: "track-5" },
   { code: "06", name: "Deployment", token: "track-6" },
+  { code: "07", name: "Knowledge", token: "track-7" },
+  { code: "08", name: "Developer Workflows", token: "track-8" },
+  { code: "09", name: "Models & Training", token: "track-9" },
 ];
 
 const VERIFIED_AT = "2026-07-14T00:00:00+08:00";

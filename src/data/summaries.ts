@@ -70,6 +70,36 @@ export const TRACK_SUMMARIES: Record<
     caveat:
       "Premature multi-model routing hides bugs and makes evals harder — a regression in one model in one route can look like noise. Prove quality on a single model with clean traces first, then add routing as an escape hatch with its own tests. Complexity in the serving path should be earned, not assumed.",
   },
+  Knowledge: {
+    claim:
+      "Useful context is a product of retrieval design, memory boundaries, and data meaning, not simply a larger prompt. Systems need to distinguish authoritative records from derived memories, then retrieve only the facts and relationships a task can justify.",
+    implication:
+      "Model the source of truth, ownership, freshness, and relationships explicitly. Combine keyword, semantic, and graph-aware retrieval where each earns its cost, and keep citations or source links available so people can verify the answer.",
+    whenToUse:
+      "Use this for assistants that must work across documents, long-running cases, knowledge bases, or business entities where a relevant fact without its history, owner, or relationship is not enough.",
+    caveat:
+      "Memory can preserve stale facts and confident mistakes. Define retention and refresh rules, retain links to the original source, and test retrieval separately from answer quality before adding more storage or graph complexity.",
+  },
+  "Developer Workflows": {
+    claim:
+      "Agentic coding changes the flow of engineering work, but it does not remove the need for scoped tasks, reviewable changes, and fast feedback. The most durable workflows give agents bounded repository context and let people retain responsibility for architecture and product decisions.",
+    implication:
+      "Treat specifications, repository search, tests, pull requests, and review feedback as parts of one controlled loop. Measure whether the workflow reduces rework and review debt, not only whether it produces code more quickly.",
+    whenToUse:
+      "Use this when teams are introducing coding agents, improving developer experience, or trying to automate repeatable engineering tasks while preserving code ownership and release controls.",
+    caveat:
+      "More generated code can overwhelm review capacity and hide architectural drift. Start with bounded tasks, explicit acceptance criteria, and reliable tests before expanding autonomy or connecting agents to high-impact workflows.",
+  },
+  "Models & Training": {
+    claim:
+      "Model choice and training strategy are engineering decisions with data, evaluation, inference cost, and maintenance consequences. A stronger base model is not automatically the best system when the task, data quality, and serving constraints are poorly understood.",
+    implication:
+      "Compare base models, post-training, synthetic data, and inference strategies against a representative task suite. Keep training data lineage and holdout evaluation separate, and optimize the smallest model or adaptation that reliably meets the product requirement.",
+    whenToUse:
+      "Use this when selecting models, planning fine-tuning or post-training, evaluating synthetic data, or deciding whether a capability gap belongs in the model, the context layer, or the surrounding product workflow.",
+    caveat:
+      "Benchmark gains can be contaminated, narrow, or too expensive to serve. Validate on held-out real tasks, track regressions by slice, and account for latency, reliability, privacy, and energy before treating a model result as a product result.",
+  },
 };
 
 export const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
@@ -120,5 +150,29 @@ export const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
       "Set explicit service-level objectives, measure cost per successful task, and route only proven task classes to smaller models.",
     observableOutcome:
       "Quality, p95 latency, and cost tradeoffs become visible before routing complexity is expanded.",
+  },
+  Knowledge: {
+    situation:
+      "A service agent answers from a large document set but cannot explain where a recommendation came from.",
+    application:
+      "Retrieve a small, source-linked set of current records and preserve entity relationships and freshness metadata.",
+    observableOutcome:
+      "The agent can give an answer with inspectable support, and operators can identify stale or missing knowledge.",
+  },
+  "Developer Workflows": {
+    situation:
+      "A team wants coding agents to speed up routine changes without creating an unreviewable stream of pull requests.",
+    application:
+      "Give the agent a bounded task, repository context, acceptance checks, and a pull-request review path owned by engineers.",
+    observableOutcome:
+      "Routine work moves faster while architectural decisions, test evidence, and release accountability remain visible.",
+  },
+  "Models & Training": {
+    situation:
+      "A product team sees a promising benchmark result and is considering a fine-tuned model for production.",
+    application:
+      "Compare it with a smaller baseline on held-out product tasks, then measure quality, latency, and cost by important user slice.",
+    observableOutcome:
+      "The rollout decision reflects real task value rather than one aggregate benchmark score.",
   },
 };
