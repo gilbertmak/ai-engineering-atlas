@@ -77,19 +77,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI Engineer Video Atlas — Talks that survive production" },
+      { title: "AI Engineering Insights" },
       {
         name: "description",
         content:
-          "A curated dashboard of AI Engineer conference talks — filter by track, search by pattern, watch the ones that actually ship.",
+          "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment",
       },
-      { property: "og:title", content: "AI Engineer Video Atlas" },
+      { property: "og:title", content: "AI Engineering Insights" },
       {
         property: "og:description",
-        content: "Curated AI Engineer conference talks, mapped to the patterns they teach.",
+        content: "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "AI Engineering Insights" },
+      { name: "twitter:description", content: "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/tQa4xTjLFUWPhrTIig0NHNRoqLP2/social-images/social-1785428876593-ai-engineering-insights-hero.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/tQa4xTjLFUWPhrTIig0NHNRoqLP2/social-images/social-1785428876593-ai-engineering-insights-hero.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
