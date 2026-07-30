@@ -7,11 +7,11 @@ export const Route = createFileRoute("/analytics")({
   head: () => ({
     links: [{ rel: "canonical", href: siteUrl("/analytics") }],
     meta: [
-      { title: "Analytics debug · Video Atlas" },
+      { title: "Analytics debug · AI Engineering Insights" },
       {
         name: "description",
         content:
-          "Live client-side event, error, and performance timing stream for the Video Atlas app.",
+          "Live client-side event, error, and performance timing stream for the AI Engineering Insights app.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],

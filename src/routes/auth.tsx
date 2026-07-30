@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
@@ -14,14 +15,15 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({ next: safeNext(search.next) }),
   head: () => ({
+    links: [{ rel: "canonical", href: siteUrl("/auth") }],
     meta: [
-      { title: "Sign in · AI Engineering Summary" },
+      { title: "Sign in · AI Engineering Insights" },
       {
         name: "description",
         content:
-          "Sign in to AI Engineering Summary to connect the talk catalog to your AI assistant over MCP.",
+          "Sign in to AI Engineering Insights to connect the talk catalog to your AI assistant over MCP.",
       },
-      { property: "og:title", content: "Sign in · AI Engineering Summary" },
+      { property: "og:title", content: "Sign in · AI Engineering Insights" },
       {
         property: "og:description",
         content: "Sign in to connect the AI engineering talk catalog to your AI assistant.",
@@ -94,7 +96,7 @@ function AuthPage() {
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
         <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          AI Engineering Summary
+          AI Engineering Insights
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">
           {mode === "signin" ? "Sign in" : "Create an account"}

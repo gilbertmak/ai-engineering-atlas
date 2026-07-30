@@ -34,6 +34,16 @@ const SCOPE_LABELS: Record<string, string> = {
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Authorize access · AI Engineering Insights" },
+      {
+        name: "description",
+        content: "Approve or deny an AI client's request to access the AI Engineering Insights talk catalog.",
+      },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     authorization_id: typeof search.authorization_id === "string" ? search.authorization_id : "",
   }),
