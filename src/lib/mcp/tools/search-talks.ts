@@ -3,17 +3,20 @@ import { z } from "zod";
 
 import { withAudit } from "../audit";
 
-import { TRACKS, VIDEOS, videoDuration, videoYear } from "../../../data/videos";
+import { TRACKS, videoDuration, videoThemes, videoYear } from "../../../data/videos";
+import { LAST_KNOWN_GOOD_CATALOG } from "../../atlas-catalog";
 
 export const TRACK_NAMES = TRACKS.map((track) => track.name);
 
-export function serializeVideo(video: (typeof VIDEOS)[number]) {
+export function serializeVideo(video: (typeof LAST_KNOWN_GOOD_CATALOG)[number]) {
   return {
     id: video.id,
     code: video.code,
     title: video.title,
     channel: video.sourceChannel,
     track: video.track,
+    themes: videoThemes(video),
+    insightReviewStatus: video.insightReviewStatus,
     publishedAt: video.publishedAt,
     year: videoYear(video),
     duration: videoDuration(video),
@@ -37,11 +40,15 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: withAudit("search_talks", ({ query, track, year, limit }) => {
     const needle = query?.trim().toLowerCase() ?? "";
-    const matches = VIDEOS.filter((video) => {
-      if (track && video.track.toLowerCase() !== track.toLowerCase()) return false;
+    const matches = LAST_KNOWN_GOOD_CATALOG.filter((video) => {
+      if (
+        track &&
+        !videoThemes(video).some((theme) => theme.toLowerCase() === track.toLowerCase())
+      )
+        return false;
       if (year && videoYear(video) !== year) return false;
       if (!needle) return true;
-      return `${video.title} ${video.sourceChannel} ${video.track} ${video.code}`
+      return `${video.title} ${video.sourceChannel} ${videoThemes(video).join(" ")} ${video.code}`
         .toLowerCase()
         .includes(needle);
     }).slice(0, Math.max(1, Math.min(limit ?? 20, 50)));

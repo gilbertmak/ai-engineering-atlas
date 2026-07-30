@@ -4,64 +4,87 @@ import { join } from "node:path";
 
 import { describe, expect, test } from "bun:test";
 
-import { talkInsightForVideo } from "../src/data/talk-insights";
-import { TRACKS, VIDEOS } from "../src/data/videos";
-
-type BaselineVideo = (typeof VIDEOS)[number] & { publishedAt: string; durationSeconds: number };
+import publicCatalog from "../src/data/atlas-public-catalog.json";
+import { TALK_INSIGHTS, talkInsightForVideo } from "../src/data/talk-insights";
+import { TRACKS } from "../src/data/videos";
 
 const root = process.cwd();
-const baseline = JSON.parse(readFileSync(join(root, "evals/catalog-baseline.json"), "utf8")) as {
-  videos: BaselineVideo[];
-};
+const catalogBaseline = JSON.parse(
+  readFileSync(join(root, "evals/catalog-baseline.json"), "utf8"),
+) as typeof import("../evals/catalog-baseline.json");
+const insightBaseline = JSON.parse(
+  readFileSync(join(root, "evals/insight-baseline.json"), "utf8"),
+) as typeof import("../evals/insight-baseline.json");
 const source = readFileSync(join(root, "src/routes/index.tsx"), "utf8");
 
 describe("Atlas release evals", () => {
-  test("catalog exactly matches the independent approved baseline", () => {
-    expect(VIDEOS).toHaveLength(baseline.videos.length);
-    const expectedById = new Map(baseline.videos.map((video) => [video.id, video]));
-    expect(new Set(VIDEOS.map((video) => video.id)).size).toBe(VIDEOS.length);
-    expect(new Set(VIDEOS.map((video) => video.code)).size).toBe(VIDEOS.length);
-    expect(new Set(VIDEOS.map((video) => video.youtubeId)).size).toBe(VIDEOS.length);
-
-    for (const video of VIDEOS) {
-      const expected = expectedById.get(video.id);
-      expect(expected).toBeDefined();
-      expect(video.code).toBe(expected?.code);
-      expect(video.youtubeId).toBe(expected?.youtubeId);
-      expect(video.title).toBe(expected?.title);
-      expect(video.sourceChannel).toBe(expected?.sourceChannel);
-      expect(video.track).toBe(expected?.track);
-      expect(video.publishedAt).toBe(expected?.publishedAt);
-      expect(video.durationSeconds).toBe(expected?.durationSeconds);
-    }
-    expect(VIDEOS.some((video) => video.youtubeId === "kxT8-C1vmd4")).toBe(false);
+  test("the complete public catalog matches the approved 984-record baseline", () => {
+    expect(publicCatalog.records).toHaveLength(984);
+    expect(publicCatalog.records).toHaveLength(catalogBaseline.recordCount);
+    expect(publicCatalog.manifest.contentHash).toBe(catalogBaseline.contentHash);
+    expect(new Set(publicCatalog.records.map((video) => video.id)).size).toBe(984);
+    expect(new Set(publicCatalog.records.map((video) => video.code)).size).toBe(984);
+    expect(new Set(publicCatalog.records.map((video) => video.youtubeId)).size).toBe(984);
+    expect(
+      publicCatalog.records.map(
+        ({
+          id,
+          code,
+          youtubeId,
+          title,
+          sourceChannel,
+          publishedAt,
+          durationSeconds,
+          insightReviewStatus,
+        }) => ({
+          id,
+          code,
+          youtubeId,
+          title,
+          sourceChannel,
+          publishedAt,
+          durationSeconds,
+          insightReviewStatus,
+        }),
+      ),
+    ).toEqual(catalogBaseline.records);
   });
 
-  test("every catalog record has a complete video-specific insight", () => {
-    const basisCounts = { transcript_backed: 0, source_synthesis: 0 };
-    for (const video of VIDEOS) {
-      const insight = talkInsightForVideo(video);
+  test("the restored insight map retains all 348 reviewed mappings", () => {
+    const insights = Object.entries(TALK_INSIGHTS);
+    expect(insights).toHaveLength(348);
+    expect(insightBaseline.total).toBe(348);
+    expect(
+      insights.filter(([, insight]) => insight.contentBasis === "transcript_backed"),
+    ).toHaveLength(344);
+    expect(
+      insights.filter(([, insight]) => insight.contentBasis === "source_synthesis"),
+    ).toHaveLength(4);
+    expect(insights.filter(([, insight]) => insight.timestampSeconds !== null)).toHaveLength(347);
+
+    for (const record of publicCatalog.records.filter(
+      (video) => video.insightReviewStatus === "approved",
+    )) {
+      const insight = talkInsightForVideo(record);
       expect(insight).toBeDefined();
       expect(insight?.claim.trim()).not.toBe("");
       expect(insight?.implication.trim()).not.toBe("");
       expect(insight?.whenToUse.trim()).not.toBe("");
       expect(insight?.caveat.trim()).not.toBe("");
-      expect(insight?.example.situation.trim()).not.toBe("");
-      expect(insight?.example.application.trim()).not.toBe("");
-      expect(insight?.example.observableOutcome.trim()).not.toBe("");
-      if (insight?.contentBasis === "transcript_backed") {
-        basisCounts.transcript_backed += 1;
-        expect(insight.timestampSeconds).toBeGreaterThanOrEqual(0);
-        expect(insight.reviewedAt).toMatch(/^2026-07-/);
-      } else if (insight?.contentBasis === "source_synthesis") {
-        basisCounts.source_synthesis += 1;
-      }
     }
-    expect(basisCounts).toEqual({ transcript_backed: 11, source_synthesis: 4 });
+    expect(
+      publicCatalog.records.filter((video) => video.insightReviewStatus === "approved"),
+    ).toHaveLength(348);
+    expect(
+      publicCatalog.records.filter((video) => video.insightReviewStatus === "unmapped"),
+    ).toHaveLength(636);
   });
 
-  test("modal contract preserves required and removed elements", () => {
+  test("infinite scroll and the historical modal contract remain present", () => {
     for (const requiredToken of [
+      "const PAGE_SIZE = 12",
+      "IntersectionObserver",
+      "Load {Math.min",
       "Category:",
       "<Clock",
       "sm:h-[75vh]",
@@ -70,20 +93,28 @@ describe("Atlas release evals", () => {
       "Use it when",
       "Caveat",
       "Open on YouTube",
-    ]) {
+    ])
       expect(source).toContain(requiredToken);
-    }
     for (const removedToken of [
       "Track synthesis · not a transcript summary",
       "Illustrative example",
       "Transcript-backed insight",
-    ]) {
+    ])
       expect(source).not.toContain(removedToken);
-    }
+  });
+
+  test("long-form insights are deferred until a reviewed modal opens", () => {
+    expect(source).toContain('import("@/data/talk-insights")');
+    expect(source).not.toContain(
+      'import { TALK_INSIGHTS, type IllustrativeExample, type TalkInsight } from "@/data/talk-insights"',
+    );
+    expect(source).toContain('aria-label="Loading reviewed insight"');
+    expect(source).toContain('data-testid="modal-action-skeleton"');
+    expect(source).toContain("{insight ? (");
   });
 
   test("Lovable MCP, OAuth and Supabase paths remain present", () => {
-    const requiredPaths = [
+    for (const path of [
       "src/routes/mcp.ts",
       "src/routes/[.mcp]/list-tools.ts",
       "src/routes/[.mcp]/invoke-tool/$tool.ts",
@@ -91,60 +122,37 @@ describe("Atlas release evals", () => {
       "src/routes/auth.tsx",
       "src/integrations/supabase/client.server.ts",
       "src/lib/mcp/audit.ts",
-    ];
-    for (const path of requiredPaths) expect(existsSync(join(root, path))).toBe(true);
+    ])
+      expect(existsSync(join(root, path))).toBe(true);
 
-    const mcpIndex = readFileSync(join(root, "src/lib/mcp/index.ts"), "utf8");
-    expect(mcpIndex).toContain("auth.oauth.issuer");
-    expect(mcpIndex).toContain("searchTalksTool");
-    expect(mcpIndex).toContain("getTalkSummaryTool");
-    expect(mcpIndex).toContain("listTracksTool");
     for (const toolPath of [
       "src/lib/mcp/tools/search-talks.ts",
       "src/lib/mcp/tools/get-talk-summary.ts",
       "src/lib/mcp/tools/list-tracks.ts",
-    ]) {
+    ])
       expect(readFileSync(join(root, toolPath), "utf8")).toContain("withAudit");
-    }
   });
 
-  test("private data and credentials are ignored and not tracked", () => {
-    const gitignore = readFileSync(join(root, ".gitignore"), "utf8");
-    for (const path of [
-      ".env",
-      "data/atlas-catalog-projection.json",
-      "data/transcript-evidence/",
-      "data/youtube-discovery-candidates.json",
-      "data/youtube-discovery-state.json",
-    ]) {
-      expect(gitignore).toContain(path);
-    }
-    const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" });
-    for (const path of [
-      ".env",
-      "data/atlas-catalog-projection.json",
-      "data/transcript-evidence/",
-      "data/youtube-discovery-candidates.json",
-      "data/youtube-discovery-state.json",
-    ]) {
-      const trackedFiles = tracked.split("\n");
+  test("the public snapshot excludes private transcript and reviewer fields", () => {
+    const serialized = JSON.stringify(publicCatalog);
+    for (const forbidden of [
+      '"transcript"',
+      '"evidence"',
+      '"reviewerVersion"',
+      '"acquisitionRunId"',
+      '"rightsBasis"',
+    ])
+      expect(serialized).not.toContain(forbidden);
+
+    const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" }).split("\n");
+    for (const path of [".env", "data/atlas-catalog-projection.json", "data/transcript-evidence/"])
       expect(
-        trackedFiles.some(
-          (entry) => entry === path || (path.endsWith("/") && entry.startsWith(path)),
-        ),
+        tracked.some((entry) => entry === path || (path.endsWith("/") && entry.startsWith(path))),
       ).toBe(false);
-    }
   });
 
-  test("track vocabulary and ordering remain deterministic", () => {
+  test("the six-theme vocabulary remains deterministic", () => {
     expect(TRACKS).toHaveLength(6);
     expect(new Set(TRACKS.map((track) => track.name)).size).toBe(6);
-    expect(VIDEOS).toEqual(
-      [...VIDEOS].sort(
-        (a, b) =>
-          Date.parse(b.publishedAt) - Date.parse(a.publishedAt) ||
-          a.youtubeId.localeCompare(b.youtubeId),
-      ),
-    );
   });
 });

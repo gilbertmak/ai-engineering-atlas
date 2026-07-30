@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import { withAudit } from "../audit";
 
-import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "../../../data/summaries";
-import { VIDEOS } from "../../../data/videos";
+import { talkInsightForVideo } from "../../../data/talk-insights";
+import { LAST_KNOWN_GOOD_CATALOG } from "../../atlas-catalog";
 import { serializeVideo } from "./search-talks";
 
 export default defineTool({
@@ -18,7 +18,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: withAudit("get_talk_summary", ({ id }) => {
     const key = id.trim().toLowerCase();
-    const video = VIDEOS.find(
+    const video = LAST_KNOWN_GOOD_CATALOG.find(
       (item) =>
         item.id.toLowerCase() === key ||
         item.code.toLowerCase() === key ||
@@ -32,13 +32,16 @@ export default defineTool({
       };
     }
 
+    const reviewedInsight =
+      video.insightReviewStatus === "approved" ? talkInsightForVideo(video) : undefined;
     const payload = {
       talk: serializeVideo(video),
-      summary: {
-        ...TRACK_SUMMARIES[video.track],
-        example: TRACK_EXAMPLES[video.track],
-        contentBasis: "track_synthesis",
-      },
+      summary:
+        reviewedInsight ??
+        {
+          contentBasis: "metadata_only",
+          status: "No reviewed insight is available for this catalog record yet.",
+        },
     };
 
     return {
