@@ -16,11 +16,22 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env
+.env.*
+!.env.example
 *.tsbuildinfo
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+data/youtube-discovery-state.json
+data/youtube-discovery-candidates.json
+data/atlas-catalog-projection.json
+data/transcript-evidence/
+data/youtube-transcripts.json
+data/transcripts/
+data/youtube-discovery-candidates.json
+data/atlas-catalog-projection.json
 
 # Editor directories and files
 .vscode/*

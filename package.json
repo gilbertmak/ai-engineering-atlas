@@ -11,6 +11,11 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "verify:sources": "bun scripts/verify-video-sources.ts",
+    "discover:sources": "bun scripts/discover-video-sources.ts",
+    "discover:sources:scheduled": "bun scripts/run-scheduled-discovery.ts",
+    "publish:discovery-metadata": "bun scripts/publish-discovery-metadata.ts",
+    "build:transcript-projection": "bun scripts/build-transcript-projection.ts",
+    "enrich:transcripts": "bun scripts/transcript-enrichment.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
