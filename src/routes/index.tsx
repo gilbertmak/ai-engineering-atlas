@@ -7,14 +7,15 @@ import {
   VIDEOS,
   videoDuration,
   videoPublishedDate,
+  videoTracks,
   videoThemes,
   videoYear,
   type Track,
   type Video,
 } from "@/data/videos";
-import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "@/data/summaries";
-import { talkInsightForVideo, type TalkInsight } from "@/data/talk-insights";
-
+import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
+import { TALK_INSIGHTS, type IllustrativeExample, type TalkInsight } from "@/data/talk-insights";
+import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 import { siteUrl } from "@/lib/site";
 
@@ -48,7 +49,7 @@ function placeholderThumb(v: Video, token: string) {
   <text x='40' y='90' font-family='ui-monospace, monospace' font-size='16' fill='#ffffff' fill-opacity='0.7' letter-spacing='4'>${v.code.toUpperCase()} · ${videoYear(v)}</text>
   <text x='40' y='210' font-family='ui-serif, Georgia, serif' font-size='120' font-weight='700' fill='#ffffff'>${initials || "AI"}</text>
   <text x='40' y='300' font-family='ui-sans-serif, system-ui' font-size='20' fill='#ffffff' fill-opacity='0.85'>${escapeXml(v.sourceChannel)}</text>
-  <text x='40' y='328' font-family='ui-sans-serif, system-ui' font-size='14' fill='#ffffff' fill-opacity='0.6'>${escapeXml(v.track)}</text>
+  <text x='40' y='328' font-family='ui-sans-serif, system-ui' font-size='14' fill='#ffffff' fill-opacity='0.6'>${escapeXml(v.track ?? "Unclassified")}</text>
 </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
@@ -186,23 +187,237 @@ function isoDuration(totalSeconds: number) {
   return `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}${seconds ? `${seconds}S` : ""}`;
 }
 
-function getInsightContent(video: Video): TalkInsight {
-  return (
-    talkInsightForVideo(video) ?? {
-      ...TRACK_SUMMARIES[video.track],
-      example: TRACK_EXAMPLES[video.track],
-      contentBasis: "track_synthesis",
+const TRACK_SUMMARIES: Record<
+  Track,
+  { claim: string; implication: string; whenToUse: string; caveat: string }
+> = {
+  "System Design": {
+    claim:
+      "The interesting design decision in an LLM system is not the model — it's the boundary between the agent's execution loop and the domain-specific expertise it draws on. Keep the loop small, generic, and inspectable; move the knowledge, tools, and policies into versioned skills you can review and swap independently. Systems that survive teams and model upgrades treat orchestration as infrastructure and expertise as content.",
+    implication:
+      "Treat every capability (a tool call, a retrieval strategy, a domain-specific playbook) as a first-class artifact with a version, an owner, an eval, and a rollback story. The runtime becomes thin — a scheduler for skills — and each skill can evolve, be A/B tested, or be retired without touching the surrounding system. This also makes on-call diagnosable: a regression maps to a specific skill version, not a monolithic prompt no one dares to change.",
+    whenToUse:
+      "Reach for this pattern once a single agent starts serving multiple domains, once more than one team contributes to prompts, or once you find yourself branching one giant system prompt on user attributes. It is also the right shape when compliance or safety reviewers need to sign off on capabilities in isolation rather than reading a 12-page monolithic prompt.",
+    caveat:
+      "Every abstraction has a coordination cost. Splitting too early creates ceremony without payoff — three skills owned by one engineer is just three files. Start monolithic, extract a skill only when a real seam has appeared (a second consumer, a distinct owner, a divergent eval), and be honest about which skills are load-bearing versus decorative.",
+  },
+  "Data & Eval": {
+    claim:
+      "Evaluation is a product surface, not a notebook artifact. The talks that hold up in production frame evals the way backend engineers frame tests: they are the thing that lets you change the system safely. If you cannot measure a regression, you cannot ship an improvement — you can only ship vibes and hope the next user is generous.",
+    implication:
+      "Treat eval datasets as living code. Version them, review them in PRs, grow them from real production traces, and gate every deploy on a set of behaviors that matter to the business. Combine cheap heuristic checks with human-labeled slices and LLM-as-judge only where it has itself been calibrated against humans. The output is not a single accuracy number; it's a dashboard of behaviors you refuse to regress.",
+    whenToUse:
+      "Any time a change to a prompt, model, retrieval pipeline, or tool schema can silently degrade user-facing quality. That is essentially every change in an LLM system. Adopt evals before scaling traffic, before swapping models, and before letting more than one person edit the prompt — retrofitting evals under production pressure is where teams stall.",
+    caveat:
+      "Bad evals are worse than no evals: they encode false confidence. A benchmark that looks green while users churn is telling you your dataset is off, not that your system is good. Invest in dataset curation, labeled failure modes, and honest sampling from production before chasing more sophisticated scoring — an LLM judge on top of a shallow dataset just launders bad taste into a number.",
+  },
+  Reliability: {
+    claim:
+      "Structure is cheaper than parsing. The moment an LLM output feeds another program, free text becomes a liability — you are one unlucky sampling away from a runtime exception, a corrupted row, or a silently wrong tool call. Force the model into schemas the rest of the system can depend on, and reliability stops being a prayer and starts being a property.",
+    implication:
+      "Wrap every LLM call in typed contracts, validators, and bounded retries. Use structured-output APIs where they exist, function/tool schemas where they don't, and a small validation + repair loop for the edges. Downstream code should never negotiate with the model — it should consume a validated object or fail closed with a legible error you can trace.",
+    whenToUse:
+      "Any path where an LLM decision drives a tool call, a database write, a workflow branch, or a UI component with fixed props. Also whenever you find yourself writing regex to extract fields out of a completion — that is the signal to move the constraint upstream into the model call itself.",
+    caveat:
+      "Over-constraining schemas can strangle useful reasoning. If every field is required and every enum is closed, the model will fabricate to satisfy the shape instead of surfacing uncertainty. Leave room for 'unknown', 'needs_human', and short free-text rationale fields — reliability is about predictable failure modes, not fake certainty.",
+  },
+  Observability: {
+    claim:
+      "You cannot improve what you cannot see, and in LLM systems 'see' means more than latency and error rate. Prompts, tool spans, retrieved chunks, model versions, user feedback, and eval scores all belong in the same pane as your existing SRE signals. Observability is the difference between debugging a regression in an afternoon and rewriting the prompt on a hunch at 2am.",
+    implication:
+      "Instrument every LLM call with the inputs, outputs, tool spans, model version, and user or automated feedback tied back to a trace ID. Feed those traces into your eval sets, your error triage, and your product analytics. When quality drops, you should be able to filter to the exact 200 traces that changed and diff them against last week.",
+    whenToUse:
+      "The moment a system leaves one developer's laptop and starts serving real requests — even internal traffic counts. Retrofitting tracing after an incident is expensive and lossy; the cheapest time to add it is before you need it, and the second-cheapest is right now.",
+    caveat:
+      "Logging raw prompts and completions creates a PII and IP surface that legal will care about eventually. Bake in redaction, per-tenant retention limits, and access controls from day one. An observability system that leaks user data is a bigger incident than the bug it was meant to help you find.",
+  },
+  "Safety & Control": {
+    claim:
+      "Guardrails are a system property, not a model property. No single prompt, classifier, or fine-tune is going to make an agent safe on its own — safety comes from layered checks at the input, the output, and the action boundary, plus the humility to fail closed when any layer is uncertain. Treat it the way you treat security: defense in depth, assumed breach.",
+    implication:
+      "Combine policy checks, refusal audits, red-team suites, and human-in-the-loop escalation with the same rigor you apply to authz and secrets. Every high-impact action (payments, emails, deletions, external calls) should have an explicit allowlist, a rate limit, and a reversible path. Measure not only what you blocked but what you should have blocked and didn't.",
+    whenToUse:
+      "Any deployment where the model can take actions with real-world consequences, quote external sources users will trust, or reach users you don't personally know. That includes internal tools once they touch production data — 'it's just for the team' is where most incidents start.",
+    caveat:
+      "Over-cautious guardrails erode trust and usefulness faster than most teams admit. A model that refuses half of legitimate requests trains users to route around it, which is worse than a permissive system with good audit trails. Measure false positives and user friction alongside missed harms, and be willing to loosen when the data supports it.",
+  },
+  Deployment: {
+    claim:
+      "Shipping an LLM feature is a latency, cost, and quality tradeoff — pick two explicitly and design for the third. Every architectural choice, from model selection to caching to prompt length, is a move along that triangle. Teams that try to optimize all three at once end up with a system that is mediocre at all three and expensive to reason about.",
+    implication:
+      "Route requests across models by task, cache aggressively at the semantic layer, and treat model choice as a runtime concern behind a stable interface. Instrument p50/p95 latency and cost-per-request alongside quality metrics, and set explicit SLOs so tradeoffs are made deliberately rather than accidentally when the bill arrives.",
+    whenToUse:
+      "Once a prototype needs to serve real traffic under a budget and an SLA rather than a demo audience. The transition from 'it works in the notebook' to 'it works at 100 QPS at a price the business can absorb' is where most projects discover they built for the wrong point on the triangle.",
+    caveat:
+      "Premature multi-model routing hides bugs and makes evals harder — a regression in one model in one route can look like noise. Prove quality on a single model with clean traces first, then add routing as an escape hatch with its own tests. Complexity in the serving path should be earned, not assumed.",
+  },
+};
+
+const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
+  "System Design": {
+    situation:
+      "An incident-response agent has accumulated one large prompt that mixes orchestration, tool instructions, and team policy.",
+    application:
+      "Keep the execution loop stable, then extract the incident playbook into a versioned skill with its own owner and eval set.",
+    observableOutcome:
+      "A regression can be traced to one skill version and rolled back without replacing the surrounding runtime.",
+  },
+  "Data & Eval": {
+    situation:
+      "A prompt revision looks better in a demo, but the team cannot tell whether it regresses difficult production cases.",
+    application:
+      "Build a reviewed golden set from real failure modes and make it a deployment gate alongside deterministic checks.",
+    observableOutcome:
+      "The release shows which behaviors improved, which regressed, and which slices still need human review.",
+  },
+  Reliability: {
+    situation:
+      "A support workflow parses free-text model output before issuing refunds, and malformed fields occasionally reach downstream code.",
+    application:
+      "Move the contract upstream into a typed schema, validate every response, and fail closed after bounded repair attempts.",
+    observableOutcome:
+      "Schema failures become measurable events instead of silent data corruption or unpredictable tool calls.",
+  },
+  Observability: {
+    situation:
+      "An agent fails intermittently, but logs contain only the user prompt and final answer.",
+    application:
+      "Capture the model version, retrieved context, decisions, tool spans, and state transitions under one trace identifier.",
+    observableOutcome:
+      "Engineers can replay the failing path and isolate the changed input, tool response, or model behavior.",
+  },
+  "Safety & Control": {
+    situation:
+      "An agent can prepare and execute a high-value transfer through the same unrestricted tool path.",
+    application:
+      "Separate proposal from execution and gate the action with identity, policy, amount, and explicit approval checks.",
+    observableOutcome:
+      "The useful proposal is preserved while consequential execution remains reviewable, reversible, and auditable.",
+  },
+  Deployment: {
+    situation:
+      "A production assistant meets quality targets but misses its latency and cost budgets during peak traffic.",
+    application:
+      "Set explicit service-level objectives, measure cost per successful task, and route only proven task classes to smaller models.",
+    observableOutcome:
+      "Quality, p95 latency, and cost tradeoffs become visible before routing complexity is expanded.",
+  },
+};
+
+// Populate only after a talk has been reviewed against a timestamped source.
+// Until then the UI deliberately falls back to an editorial track synthesis.
+const TALK_INSIGHTS_BY_YOUTUBE_ID = new Map(
+  VIDEOS.flatMap((video) => {
+    const insight = TALK_INSIGHTS[video.id];
+    return insight ? ([[video.youtubeId, insight]] as const) : [];
+  }),
+);
+
+function getInsightContent(video: CatalogVideo): TalkInsight {
+  const primaryTopic = video.track ?? videoTracks(video)[0];
+  const reviewedInsight =
+    TALK_INSIGHTS[video.id] ?? TALK_INSIGHTS_BY_YOUTUBE_ID.get(video.youtubeId);
+  const approvedEvidence = (video.evidence ?? []).filter(
+    (evidence) =>
+      evidence.status === "approved" &&
+      video.transcript?.status === "acquired" &&
+      video.transcript.availability === "available" &&
+      video.transcript.reviewStatus === "approved" &&
+      video.transcript.reviewedAt !== null &&
+      video.transcript.redistributionAllowed &&
+      evidence.videoId === video.id &&
+      evidence.transcriptDigest === video.transcript.digest,
+  );
+  const evidenceTimestamp = approvedEvidence[0]?.timestampSeconds ?? null;
+  const evidenceReviewedAt = approvedEvidence[0]?.reviewedAt ?? null;
+  // Metadata-only records must fail closed before any legacy/static insight
+  // mapping is considered. Discovery metadata is not approval for claims.
+  if (video.insightReviewStatus !== "approved") {
+    return {
+      claim: "No reviewed insight yet. This record contains approved source metadata only.",
+      implication:
+        "The Atlas intentionally withholds transcript-backed or speaker-attributed claims until Hermes/content review supplies approved evidence.",
+      whenToUse:
+        "Use the YouTube source link for the primary material. Do not treat this record as an editorial or transcript summary.",
+      caveat:
+        "Discovery and metadata publication do not approve an insight, a track classification, or an attribution.",
+      example: {
+        situation: "A new upload passed the approved channel and playlist identity policy.",
+        application:
+          "Publish only its metadata with an unclassified status while it awaits review.",
+        observableOutcome: "The catalog updates without creating unsupported claims.",
+      },
+      contentBasis: "metadata_only",
       timestampSeconds: null,
       reviewedAt: null,
-    }
-  );
+    };
+  }
+  if (reviewedInsight) return reviewedInsight;
+  if (approvedEvidence.length) {
+    const evidenceText = approvedEvidence.map((evidence) => evidence.text).join(" ");
+    return {
+      claim: evidenceText,
+      implication:
+        "The reviewed evidence is published as a concise paraphrase so the Atlas can connect the idea to a practical engineering decision without exposing the underlying transcript.",
+      whenToUse:
+        "Use this when you want to inspect the reviewed point in context, then open the source video for the full explanation and surrounding caveats.",
+      caveat:
+        "This is a reviewed paraphrase of one or more transcript moments, not a complete account of the talk.",
+      example: {
+        situation: "A team is deciding whether the reviewed pattern fits its own system.",
+        application:
+          "Compare the paraphrase with the source video, then test the pattern against local requirements and failure modes.",
+        observableOutcome:
+          "The decision records the source moment and the local evidence used to accept or reject the pattern.",
+      },
+      contentBasis: "transcript_backed",
+      timestampSeconds: evidenceTimestamp,
+      reviewedAt: evidenceReviewedAt,
+    };
+  }
+  if (!primaryTopic) {
+    return {
+      claim: "No reviewed insight yet. This record contains approved source metadata only.",
+      implication:
+        "The Atlas intentionally withholds transcript-backed or speaker-attributed claims until Hermes/content review supplies approved evidence.",
+      whenToUse:
+        "Use the YouTube source link for the primary material. Do not treat this record as an editorial or transcript summary.",
+      caveat:
+        "Discovery and metadata publication do not approve an insight, a track classification, or an attribution.",
+      example: {
+        situation: "A new upload passed the approved channel and playlist identity policy.",
+        application:
+          "Publish only its metadata with an unclassified status while it awaits review.",
+        observableOutcome: "The catalog updates without creating unsupported claims.",
+      },
+      contentBasis: "metadata_only",
+      timestampSeconds: null,
+      reviewedAt: null,
+    };
+  }
+  return {
+    ...TRACK_SUMMARIES[primaryTopic],
+    example: TRACK_EXAMPLES[primaryTopic],
+    contentBasis: "track_synthesis",
+    timestampSeconds: null,
+    reviewedAt: null,
+  };
 }
 
 function Dashboard() {
+  const [catalog, setCatalog] = useState<{
+    records: readonly CatalogVideo[];
+    source: "public_snapshot";
+    verifiedAt: string;
+  }>(() => ({
+    records: LAST_KNOWN_GOOD_CATALOG,
+    source: "public_snapshot" as const,
+    verifiedAt: "2026-07-14T00:00:00+08:00",
+  }));
   const [query, setQuery] = useState("");
-  const [track, setTrack] = useState<Track | "All">("All");
+  const [selectedThemes, setSelectedThemes] = useState<Track[]>([]);
   const [year, setYear] = useState<"All" | number>("All");
-  const [open, setOpen] = useState<Video | null>(null);
+  const [open, setOpen] = useState<CatalogVideo | null>(null);
   const lastCardTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const closeSummary = () => {
@@ -214,21 +429,36 @@ function Dashboard() {
   // pop-in of fully-rendered cards. Also gives images a beat to warm up.
   const [booting, setBooting] = useState(true);
 
-  const years = useMemo(() => Array.from(new Set(VIDEOS.map(videoYear))).sort((a, b) => b - a), []);
+  useEffect(() => {
+    void loadAtlasCatalog().then((result) => {
+      setCatalog({
+        records: result.records,
+        source: result.source,
+        verifiedAt: result.manifest.sourceCatalogVerifiedAt,
+      });
+    });
+  }, []);
+
+  const years = useMemo(
+    () => Array.from(new Set(catalog.records.map(videoYear))).sort((a, b) => b - a),
+    [catalog.records],
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return VIDEOS.filter((v) => {
-      if (track !== "All" && v.track !== track) return false;
+    return catalog.records.filter((v) => {
+      const topics = videoThemes(v);
+      if (selectedThemes.length && !selectedThemes.some((theme) => topics.includes(theme)))
+        return false;
       if (year !== "All" && videoYear(v) !== year) return false;
       if (!q) return true;
       return (
         v.title.toLowerCase().includes(q) ||
         v.sourceChannel.toLowerCase().includes(q) ||
-        v.track.toLowerCase().includes(q)
+        topics.some((topic) => topic.toLowerCase().includes(q))
       );
     });
-  }, [query, track, year]);
+  }, [catalog.records, query, selectedThemes, year]);
 
   const PAGE_SIZE = 12;
   // Always start at PAGE_SIZE on both server and client to avoid a hydration
@@ -269,7 +499,7 @@ function Dashboard() {
     // the user's current scroll position — jumping to top on every keystroke
     // is jarring while searching.
     setVisibleCount(PAGE_SIZE);
-  }, [query, track, year]);
+  }, [query, selectedThemes, year]);
 
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
@@ -364,9 +594,7 @@ function Dashboard() {
           <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
             AI/E
           </span>
-          <span className="font-display text-sm font-medium tracking-tight">
-            AI Engineering Insights Atlas
-          </span>
+          <span className="font-display text-sm font-medium tracking-tight">AI Engineering Insights Atlas</span>
         </a>
       </header>
 
@@ -395,7 +623,7 @@ function Dashboard() {
           <h1 className="sr-only">AI Engineering Insight Atlas</h1>
           <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
             Explore practical industry insights across six engineering domains. Transcript
-            extraction is still in progress, so the knowledge layer matures over time.
+            extraction is still in progress, so the knowledge layer will mature over time.
           </p>
         </div>
         <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
@@ -448,7 +676,7 @@ function Dashboard() {
           <button
             onClick={() => {
               setQuery("");
-              setTrack("All");
+              setSelectedThemes([]);
               setYear("All");
             }}
             className="rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_8px_24px_-12px_rgba(20,20,40,0.5)] transition-transform hover:-translate-y-[1px]"
@@ -458,15 +686,24 @@ function Dashboard() {
         </div>
 
         {/* Track chips */}
-        <div className="mt-5 flex flex-wrap gap-2" aria-label="Filter by track">
-          <TrackChip label="All tracks" active={track === "All"} onClick={() => setTrack("All")} />
+        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filter by theme">
+          <TrackChip
+            label="All themes"
+            active={selectedThemes.length === 0}
+            onClick={() => setSelectedThemes([])}
+          />
           {TRACKS.map((t) => (
             <TrackChip
               key={t.code}
               label={t.name}
-              token={t.token}
-              active={track === t.name}
-              onClick={() => setTrack(t.name)}
+              active={selectedThemes.includes(t.name)}
+              onClick={() =>
+                setSelectedThemes((current) =>
+                  current.includes(t.name)
+                    ? current.filter((theme) => theme !== t.name)
+                    : [...current, t.name],
+                )
+              }
             />
           ))}
           <label className="ml-auto flex items-center gap-2 rounded-xl border border-ink/20 bg-card px-3 py-2 font-mono text-[11px] uppercase tracking-widest shadow-[0_6px_18px_-12px_rgba(20,20,40,0.25)]">
@@ -491,7 +728,8 @@ function Dashboard() {
           {booting
             ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
             : visible.map((v, i) => {
-                const t = TRACKS.find((tr) => tr.name === v.track)!;
+                const t = TRACKS.find((tr) => tr.name === videoThemes(v)[0]) ?? TRACKS[0]!;
+                const topics = videoThemes(v);
                 const eager = i < 3;
                 return (
                   <button
@@ -512,7 +750,7 @@ function Dashboard() {
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        <span>{v.code}</span>
+                        <span>Talk</span>
                         <span>{videoPublishedDate(v)}</span>
                       </div>
                       <h3
@@ -524,16 +762,23 @@ function Dashboard() {
                       <p className="mt-2 font-sans text-sm text-muted-foreground">
                         YouTube · {v.sourceChannel}
                       </p>
-                      <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
-                        <span
-                          className="inline-flex items-center gap-2"
-                          style={{ color: `var(--${t.token})` }}
-                        >
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ background: `var(--${t.token})` }}
-                          />
-                          {t.name}
+                      <div className="mt-4 flex items-end justify-between gap-3 border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
+                        <span className="flex flex-wrap gap-x-3 gap-y-1">
+                          {topics.length ? (
+                            topics.map((topic) => {
+                              return (
+                                <span
+                                  key={topic}
+                                  className="inline-flex items-center gap-1.5 text-ink"
+                                >
+                                  <TrackIcon track={topic} className="h-3.5 w-3.5" />
+                                  {topic}
+                                </span>
+                              );
+                            })
+                          ) : (
+                            <span className="text-muted-foreground">No theme assigned</span>
+                          )}
                         </span>
                         <span className="text-ink group-hover:underline">Summary →</span>
                       </div>
@@ -591,7 +836,7 @@ function Dashboard() {
 
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          <span>© Video Atlas · fixture edition</span>
+          <span>© Video Atlas · local reviewed projection</span>
           <span className="flex items-center gap-4">
             <a href="/analytics" className="hover:text-ink">
               Analytics debug
@@ -608,12 +853,10 @@ function Dashboard() {
 
 function TrackChip({
   label,
-  token,
   active,
   onClick,
 }: {
   label: string;
-  token?: string;
   active: boolean;
   onClick: () => void;
 }) {
@@ -622,17 +865,71 @@ function TrackChip({
       aria-pressed={active}
       onClick={onClick}
       className={
-        "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[11px] uppercase tracking-widest transition-all " +
+        "inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[11px] uppercase tracking-widest transition-all " +
         (active
           ? "border-ink bg-ink text-paper shadow-[0_8px_20px_-10px_rgba(20,20,40,0.6)]"
           : "border-ink/20 bg-card text-ink shadow-[0_4px_14px_-10px_rgba(20,20,40,0.35)] hover:-translate-y-[1px] hover:border-ink/50")
       }
     >
-      {token && !active && (
-        <span className="h-2 w-2 rounded-full" style={{ background: `var(--${token})` }} />
-      )}
+      {label !== "All themes" && <TrackIcon track={label as Track} className="h-4 w-4" />}
       {label}
     </button>
+  );
+}
+
+function TrackIcon({ track, className = "h-4 w-4" }: { track: Track; className?: string }) {
+  const common = {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    "aria-hidden": true,
+  };
+  if (track === "System Design")
+    return (
+      <svg {...common}>
+        <path d="m4 7 8-4 8 4-8 4-8-4Zm0 5 8 4 8-4M4 17l8 4 8-4" />
+      </svg>
+    );
+  if (track === "Data & Eval")
+    return (
+      <svg {...common}>
+        {[6, 12, 18].flatMap((y) =>
+          [6, 12, 18].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r={x === y ? 1.8 : 1} />),
+        )}
+      </svg>
+    );
+  if (track === "Reliability")
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="3" />
+        <circle cx="12" cy="12" r="7" />
+        <path d="M12 1v22M1 12h22" />
+        <circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  if (track === "Observability")
+    return (
+      <svg {...common}>
+        <path d="m2 17 5-6 4 3 5-9 6 7" />
+        <path d="M3 22v-3m5 3v-5m5 5v-4m5 4v-7m4 7v-5" />
+      </svg>
+    );
+  if (track === "Safety & Control")
+    return (
+      <svg {...common}>
+        <rect x="2" y="2" width="4" height="4" />
+        <rect x="18" y="2" width="4" height="4" />
+        <rect x="2" y="18" width="4" height="4" />
+        <rect x="18" y="18" width="4" height="4" />
+        <path d="m12 7 5 5-5 5-5-5 5-5ZM6 4h12M4 6v12m16-12v12M6 20h12" />
+      </svg>
+    );
+  return (
+    <svg {...common}>
+      <path d="m3 8 5-3 5 3-5 3-5-3Zm0 0v6l5 3 5-3V8M13 8l4-2 4 2-4 3-4-3Zm0 6 4-3 4 3-4 3-4-3Zm0 0v6l4 2 4-2v-6" />
+    </svg>
   );
 }
 
@@ -848,7 +1145,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
   );
 }
 
-function SummaryModal({ video, onClose }: { video: Video; onClose: () => void }) {
+function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => void }) {
   const themes = videoThemes(video);
   const insight = getInsightContent(video);
   const timestamp = (seconds: number) =>
@@ -926,14 +1223,6 @@ function SummaryModal({ video, onClose }: { video: Video; onClose: () => void })
               href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
               target="_blank"
               rel="noreferrer"
-              onClick={() =>
-                trackEvent("open_on_youtube_click", {
-                  videoId: video.youtubeId,
-                  code: video.code,
-                  track: video.track,
-                  sourceChannel: video.sourceChannel,
-                })
-              }
               className="mt-6 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper"
             >
               Open on YouTube <span>↗</span>
@@ -981,4 +1270,26 @@ function InsightBody({ body, className }: { body: string; className: string }) {
   }
 
   return <p className={className}>{body}</p>;
+}
+
+function Row({ label, body }: { label: string; body: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 gap-3 px-6 py-5 md:grid-cols-[140px_1fr] md:px-8">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div className="font-sans text-[15px] leading-relaxed text-ink">{body}</div>
+    </div>
+  );
+}
+
+function SideBlock({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-5 border-b border-ink/10 pb-4 last:border-b-0">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-2">{children}</div>
+    </div>
+  );
 }

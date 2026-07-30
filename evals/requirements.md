@@ -6,11 +6,11 @@ This file is the review contract for changes that touch the public catalog, insi
 
 | Requirement                               | Rule                                                                                                                                                                                             | Release impact |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
-| `ATLAS-CAT-001` Catalog completeness      | Every baseline video ID, code and YouTube ID must remain present and unique. Intentional additions, removals or corrections update the baseline in the same reviewed change.                     | Blocker        |
+| `ATLAS-CAT-001` Catalog completeness      | The public Atlas retains all 984 baseline records with unique IDs, codes and YouTube IDs. Intentional additions, removals or corrections update the baseline in the same reviewed change.       | Blocker        |
 | `ATLAS-CAT-002` Source identity           | Each record has a valid YouTube ID, source title, channel, track, publication date and positive duration. Source links are derived from the catalog ID.                                          | Blocker        |
-| `ATLAS-INS-001` Insight completeness      | Every catalog record resolves to a video-specific insight or an explicit, tested fallback. A restored video cannot silently show another video’s insight.                                        | Blocker        |
-| `ATLAS-INS-002` Insight provenance        | Transcript-backed insights carry a reviewed timestamp and review date. Editorial track synthesis must not be labelled as transcript-backed.                                                      | Blocker        |
-| `ATLAS-UI-001` Modal contract             | The modal retains category, clock/time, 75vh sizing, Insight, Why it matters, Use it when, Caveat and source-link behaviour. Removed labels and illustrative-example sections must not reappear. | Blocker        |
+| `ATLAS-INS-001` Insight completeness      | Exactly 348 records resolve to their reviewed video-specific mappings: 344 transcript-backed and four source-synthesis. The other 636 records explicitly remain unmapped metadata.              | Blocker        |
+| `ATLAS-INS-002` Insight provenance        | Transcript-backed insights carry a reviewed timestamp and review date. Discovery `contentStatus` is separate from the explicit `insightReviewStatus` used to publish an approved mapping.       | Blocker        |
+| `ATLAS-UI-001` Gallery and modal contract | The gallery initially renders 12 records, loads subsequent 12-record pages without drops or duplicates and resets on filtering. The modal retains category, clock/time, 75vh sizing, Insight, Why it matters, Use it when, Caveat and source-link behaviour. | Blocker        |
 | `ATLAS-ARCH-001` Integration preservation | Catalog changes must preserve the Lovable MCP discovery/list/invoke routes, OAuth routes and Supabase integration boundaries.                                                                    | Blocker        |
 | `ATLAS-SEC-001` Private-data boundary     | Local transcript evidence, projection snapshots, discovery queues, credentials and private reviewer material are ignored and absent from tracked files.                                          | Blocker        |
 | `ATLAS-REL-001` Deterministic behaviour   | Catalog ordering, six-track vocabulary and baseline comparisons are deterministic and covered without live YouTube calls.                                                                        | Blocker        |
@@ -18,7 +18,7 @@ This file is the review contract for changes that touch the public catalog, insi
 
 ## Change protocol
 
-When adding or removing a video, update the source catalog, `evals/catalog-baseline.json`, insight coverage and the relevant test evidence in one pull request. The PR description must state whether the change is an intentional catalog revision or a regression repair.
+When adding or removing a video, update the public-safe catalog, `evals/catalog-baseline.json`, `evals/insight-baseline.json`, insight coverage and the relevant test evidence in one pull request. The PR description must state whether the change is an intentional catalog revision or a regression repair.
 
 When changing the modal or integration architecture, update the requirement row, the executable assertion and the PR validation output. Do not resolve a merge conflict by taking a whole file from one branch without checking catalog count, baseline IDs, insight coverage and integration paths.
 

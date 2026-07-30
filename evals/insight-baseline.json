@@ -1,0 +1,2099 @@
+{
+  "schemaVersion": 1,
+  "total": 348,
+  "counts": {
+    "transcript_backed": 344,
+    "source_synthesis": 4
+  },
+  "timestamped": 347,
+  "entries": [
+    {
+      "id": "youtube-wjk0ulMAkbc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 42,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CS5Cmz5FssI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 40,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-xOP1PM8fwnk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 180,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XNtkiQJ49Ps",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 140,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-v4F1gFy-hqg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 30,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4fntwuOoedA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 475,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-R7A8rX-09Zw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 122,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--QFHIoCo-Ko",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 180,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-kR64LOqBBCU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 216,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-YBYUvGOuotE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 220,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ClWD8OEYgp8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 336,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CD6R4Wf3jnY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 420,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-0n3MKk7r60w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1028,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_A367W_qvc8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 491,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZdheJTfLu-s",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2779,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-EmhRyw6xeT0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 518,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-sPUjIBH5Cwg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 695,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CrqPcIZOOXA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 814,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_fQ7Z_Wfouk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 854,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-rnDm57Py54A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1876,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-fLUtUkqYHnQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1053,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-G_bHFmEAarM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1510,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-MhHEGMFCEB0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1647,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-WE_Gnowy3uw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 262,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-juoNbJiZUi0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 207,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zepu8Kk6FBQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 548,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-cVzf49yg0D8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 873,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-W76woOYHlvY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 422,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-sJ2jc7leKBk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 296,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-tDArkCqjA-c",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2460,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-bSG9wUYaHWU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 389,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-5ID22ACI7IM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1068,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-BKWpYIWvAo4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1440,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-2TLXsxkz0zI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 563,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-GmAQKINjv1E",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 6574,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UsB70Tf5zcE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2555,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_QAVExf_1uw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 724,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Lm8BLHkxiAo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 133,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-qdh_x-uRs9g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 279,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-o-zkvb0iFDQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 329,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ow1we5PzK-o",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 274,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-pFsfax19yOM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2660,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--aM2EDTiaMs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 213,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Wmp2Tku2PrI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2622,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-x8Yb4RidLgM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 659,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VhfAVA3BG2I",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 192,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-1lgFGaHoGq8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 595,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-2xJoimgoqBg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 113,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-cgimkNGNjvU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 573,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-I3znWC3MEXM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 896,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-IvE8n-ylFYY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 289,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-LqLoYksJ6do",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 380,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XjI-AR4pt7Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 938,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-yWS0udrIOc8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 229,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VrpEyglYgeU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 682,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-wEc9aG7cRQc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 789,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-m24UKZomm7k",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 264,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-fnLBmfsI_Fg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 214,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-B8l81jhvHbI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 327,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-bUJgirn4_yc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 769,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ltv-L5oMPIs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 758,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Q9ycQHbDdJs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 344,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-maTp79FD9gI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 361,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-hMlLw1LeIK8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 124,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-LC3-P7v3yoI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 872,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-0RNNfxpdbQk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 590,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_cVfz88_j7A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 550,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--561cZmir5Q",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 649,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-lMCxVorb9wM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 605,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JJGbw4ggaFs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 480,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-3z2uT5aDx_Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1319,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XLEYtv3cMlw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 655,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-3ySF0I5iE_0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 637,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-L3RuP_q8Bwc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 749,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-eAXxdtNlK04",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 903,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Bck7ABCZRZI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 315,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-yv6xovSsB1U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 561,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Fu45geO3zX8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1146,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-bZISsg7H7DA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 195,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zU4EagB311U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 580,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-imFedndyXYQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 758,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-c35YoMdnI78",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2502,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-uIiA6DquRiE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 8290,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-RGSFUqzqErE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 847,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-1P1hJ36rxM0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 689,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-eBUyTS7SzV4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 993,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Z2Erdirpudo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 515,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-iCj_ATyThvc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 901,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZSQb5fzRFPw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 562,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-q4Tr-DknG2M",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 516,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-uU5Gv2h8-9g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1068,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-8G_1-3IO4ZQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 870,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-0vphxNt4wyk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1010,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-APqXGyCoGW4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1181,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-n97BCfyFIvw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 966,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--CnA2lGfymY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1137,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-O3FEoMYvUf8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 644,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-OqM67QG_Ikk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1771,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-V-EDrhIhHzQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2080,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-8oyalrfwgjw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 128,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-7JgIS42mz7U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1155,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-EUsPvBeIx70",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 845,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-sum9DgexFRQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 379,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UlFB6efYN5Q",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 626,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-TJPInBjhE4Q",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 964,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-5192csoTkVo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 273,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-7P0elyLIxXo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 312,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-xg1zNlzw7Jk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 434,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vJukHCIv7Ck",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1140,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-jtzh-GBXBWc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 452,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-RGiXcVxSD3s",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 374,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-KB41dTlX1Uc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 995,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-WLXxTaPagA8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 628,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-9arM9b7JgOo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 841,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-GdvKNwMcfd0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 627,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-YZQsWVeN3rE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 886,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-WkBPX-oDMnA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 669,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZpK5PWX2YRM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 937,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-pMggiOb18tc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1488,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-xUnRQ9vLXxo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 891,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-grdoOC1BT1s",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1034,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-iRcX54EO5g8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 336,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-HsxQICTLF84",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 651,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-HEFSExa0xl0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 629,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-MpZzWMdmQCE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 250,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-BqZrTdgBaPw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 491,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4kYl2_mqmnQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 520,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-IQkVMvXQKLY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 735,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-G6IlDzj8OjA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 148,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-qdZzND79mcg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1290,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-1IdzkRVmWAA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 443,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-2e9ANoOEn28",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1117,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CDqzWpwkSls",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1205,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CLttOU7n6sI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 768,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-bRnoEpoK5m4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 600,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UcYoMg-8-L8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 967,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Rx8f05JI_WA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 604,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-9fubhllmsBU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 590,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-kZsf_Sfm7RU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 869,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-2IxD9OB3XuQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1025,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-sAOBXCDiDOs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1463,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-d_Ftrl3vfV0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 77,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-I2cbIws9j10",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 23130,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-hVJOnuhFmTA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1134,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4sX_He5c4sI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 28673,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-htM02KMNZnk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 18420,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UNzCG3lw6O0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1186,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-fWXJM-J0ZB8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1140,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-spNAUEgq_A8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1130,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-6bmM45jkMDY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 579,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-APh1Vx0oLmQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 199,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-pSto5YaNGUo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1704,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-DqtmZE6Hl0g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 954,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-LrGCT7G_rU8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 723,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Lc8zRh9muoY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 617,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-65X0pQ6Lmbg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 600,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Iwe_RY-fYgI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1025,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-dRmWYHuIJxM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 491,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-uiP88SpCi1Q",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 285,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-akk6KRlcwW4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 673,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Akm1sqvWG4A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2060,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-T0HhO4YtTfE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1113,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XovaGv4f39A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 205,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-OXMMN-XbxwA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 712,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-whue9_YquGA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 545,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JRTAtZ5iBkU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 330,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-IddXPepIAS4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 271,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Jx4ZFEAq6bY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 573,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--x5GEVnkuRw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 548,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-aHhB3sjGjkI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1293,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JnubYCYunk8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 212,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vh2VGuQ3zhY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1210,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ij-AU9dpJjc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1112,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZRM_TfEZcIo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1350,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4uFVSLgD2Q4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 631,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-jVjt-2g8NMY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 519,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UPwGaM2MKHY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 798,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-3hXJI2q0Jz8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 47,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vljxQZfJ9wY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 69,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZD9-4fW2HhM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 162,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-IJXjTLPzvAU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 296,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-0S8xe9ftGTM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 147,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ObTPqBGsEbA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 164,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-btxGmN8RvNU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 44,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-gHs5ZiY80PM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 128,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-c-2eEv2ou7Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 221,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-iUWwcG-C8OU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 197,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ghJmWQCIHRM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 195,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-so9l_MwS2yg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 239,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-TNwJ1LMiENk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 257,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-SS-A8sE7hkw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 66,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zMiSRliEzv4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 83,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zDGHt0LB-dA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 83,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UM6sFg_jdlE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 90,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Bc6Ojl2XS1w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 119,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-gUMwt4-5kn0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 11,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-TUnPNY4E2fw",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 135,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-EcqMYoIV57A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 45,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JsCCrBF7F1g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 129,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ILdE7FaAjVA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 99,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zTZ0qunQXnM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 44,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_xIwFcnHqp4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 65,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-QuuIywMG4s8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 143,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-KLSuFPj2ld0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 45,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_B4Pv9ttFgY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 65,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-pmoDeA3RBZY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 128,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-mFLlVpnGpds",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 77,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-r305-aQTaU0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 29,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-iNkFlCiij0U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 42,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-wcUJWP6WpGM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 80,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-NmjGfdZLNIs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1230,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-hCMrEfPG2Yg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 29,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zKk7sDMGDEQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 40,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-504PvfXou5Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 37,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-wjXowoQ7E8c",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 487,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-HvZXAOZ3iv8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 30,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-YYH0DMQr30A",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 49,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-KA5kPbdkK2E",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 48,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-hqHC6Z_lXyo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 23,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-BM2JX9hqsVQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 31,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-u-rJwPPU3QA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 54,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-NuePCNMpWGc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 35,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-N7b1PJc7SFc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 81,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-UQKg0td-Bf4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 14,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vy7o1g2iHY8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 30,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-phchDt63qAA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 31,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-3_gYbhABcAE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 34,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-0jeZfjJMfmo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 29,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-B9h9ovW5H9U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 82,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-V-L0INGTEOg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 27,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XBaznoTRDFI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 169,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-AGkzpxMdPn8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 15,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-abvQEhvRI_c",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 157,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-li0SaBt9RDM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 121,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ugUeZ8-b-u0",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 14,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-FB-MLPhL9Ms",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 31,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ESbWpPT_9-o",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 15,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-7CrPrHgoEYk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 74,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-BiG2ssibKGc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 18,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Ubwb6NzegyA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 18,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-NKwIX3CiRgU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 12,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-t4359sKBu4w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 35,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-TeGsFFNqRLA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 30,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-F1DYkY1BlfM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 244,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-owH1f0N-keY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 127,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-7gujZrJ9L5I",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 178,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-W-SX_srBa3Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 243,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-WRBNDpUhsJQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 360,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-LMbeDEQO6QM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 518,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-5Sui_OnSRlY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 324,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ns9f1fjLD7Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 782,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-dyHpnnlkTc8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 123,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VaS2h-dY1-4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 319,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JomVvNDjGb8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 193,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-GIRpQEfYf3U",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 238,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vNCY9kXXyDQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 188,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--TiET_K-E_g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 717,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-x2bH0RKPgdc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 76,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-5YSJEP0HWzM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 117,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ObNKGf9YR0g",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 331,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-BcWFc3H7Khg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 963,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-mR-WAvEPRwE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 155,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-C_GG5g38vLU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 384,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-L2r6vLlLgs8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 872,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-YNJvm7t3yq8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 328,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-FWEInOtngmM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 834,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-eW_vxrjvERk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 242,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-m12vGjfbNlo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 516,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-_xQnSNlBP_w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2503,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VMemhtlsoNk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 107,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JT3OzDKrucU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 128,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4_VQBbs2iQA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 245,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Xfl50508LZM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 423,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-iOXM3zE-2dk",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 3508,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vi-2nasppAg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 339,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-OV56RddyFuU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 46,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VktrqzQgytY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 600,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-wflNENRSUb4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1720,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-4VhbYlfC7Gs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 264,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-svCnShDvgQg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 567,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-esY99nYXxR4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 138,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ON5LIT0M4do",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 286,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-X6NShR2ccOg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 195,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ynJyIKwjonM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 2734,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-A48uhxfxbsM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1021,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-FlzpEGHNVKQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 422,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-vAIDdLKB6-w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 215,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ohKt066uFhg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 349,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-zTLJNHj0DeQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 129,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-3jGAU2sbAyY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 148,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-P_RI1kCkRbo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 341,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-DCZZ3AJKzuc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 171,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-kfSDc2eVLo4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 294,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Cz4v1WHVyZc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 312,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-RGe6EjucbzI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 791,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-X1kp-ABIIxQ",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 456,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-XV2oYi7kojc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 378,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-1EZdpEhwmNc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 804,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Q0VkgCyNVUg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 873,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-VGN22pPpb-8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 265,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-9QebvrrY3KY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 380,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-JvKO40CFq-s",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 1865,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-8qWIPUia2O8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 376,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Sir59K8ZDPU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 552,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-u1yaOeEX4e8",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 450,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Btk8wDUVs74",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 470,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-jt1Pbr_n6oU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 392,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-khVX_BUnEwU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 336,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-kRkcNOsRyYg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 385,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-u6jJcIFDLE4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 512,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-H7puB0RwJMM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 550,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-418t26CVz-w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 895,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-mOf-PP4mVjA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 319,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-O-CBZ3JtRvo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 589,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-GgLQ02aO-hs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 670,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube--I5W5QVAT8E",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 624,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Ib5GBkD555M",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 528,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-2JX6JYyQG4Y",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 568,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-9HbzAWnKbo4",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 251,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-q2JrUKBMf0w",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 255,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-jRCpXUjz4CI",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 516,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-cO8qC6HBuBg",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 370,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-il1c1a2FufU",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 259,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-hacEQHHhu2Q",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 81,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-Ib5t2RLtxvM",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 282,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-b_PmGocP4rc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 294,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-31GUkCBD-Uc",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 356,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-xyL2Ltkh-SA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 458,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-CgsWxRUY5Eo",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 452,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-ZyIoTOAbRfs",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 393,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-KhYifX22yhE",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 70,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-O72p-rBb2bA",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 246,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "youtube-xIt_mTQp6mY",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 138,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v25",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 63,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v21",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 244,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v23",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 276,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v22",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 269,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v18",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 470,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v17",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 330,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v04",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 174,
+      "reviewedAt": "2026-07-29T00:00:00+08:00"
+    },
+    {
+      "id": "v19",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 440,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v24",
+      "contentBasis": "source_synthesis",
+      "timestampSeconds": 617,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v20",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 484,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v06",
+      "contentBasis": "source_synthesis",
+      "timestampSeconds": 2718,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v08",
+      "contentBasis": "source_synthesis",
+      "timestampSeconds": 878,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v12",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 333,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v03",
+      "contentBasis": "transcript_backed",
+      "timestampSeconds": 233,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    },
+    {
+      "id": "v05",
+      "contentBasis": "source_synthesis",
+      "timestampSeconds": null,
+      "reviewedAt": "2026-07-30T00:00:00+08:00"
+    }
+  ]
+}

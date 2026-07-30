@@ -3,8 +3,10 @@
   "statusVocabulary": ["executed", "attached", "waived", "pending", "not-applicable"],
   "outcomes": ["pass", "fail", "error"],
   "catalogPolicy": {
-    "expectedRecordCount": 15,
-    "expectedInsightBasisCounts": { "transcript_backed": 11, "source_synthesis": 4 }
+    "expectedRecordCount": 984,
+    "expectedMappedInsightCount": 348,
+    "expectedUnmappedCount": 636,
+    "expectedInsightBasisCounts": { "transcript_backed": 344, "source_synthesis": 4 }
   },
   "evals": [
     {
@@ -35,8 +37,8 @@
       "priority": "P0",
       "automation": "bun",
       "command": "bun test tests/evals.test.ts",
-      "testOrFixture": "tests/evals.test.ts + src/data/talk-insights.ts",
-      "passCriteria": "Every catalog video resolves to its own complete insight and transcript-backed records have non-negative timestamps and review dates.",
+      "testOrFixture": "tests/evals.test.ts + evals/insight-baseline.json + src/data/talk-insights.ts",
+      "passCriteria": "Exactly 348 approved records resolve to complete mapped insights, including 344 transcript-backed and four source-synthesis records; 636 others fail closed as unmapped metadata.",
       "privacyClassification": "public-approved-synthesis",
       "evidencePath": "artifacts/evals/EVAL-INS-001.json",
       "releaseImpact": "blocker"

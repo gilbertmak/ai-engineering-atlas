@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-07-08",
     "test": "bun test",
-    "evals:validate": "bun scripts/validate-evals.ts",
+    "evals:validate": "node --experimental-strip-types scripts/validate-evals.ts",
     "typecheck": "tsc --noEmit",
     "verify:sources": "bun scripts/verify-video-sources.ts",
     "lint": "eslint .",

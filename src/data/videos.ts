@@ -11,7 +11,7 @@ export type Video = {
   code: string;
   title: string;
   sourceChannel: string;
-  track: Track;
+  track: Track | null;
   tracks?: Track[];
   themes?: Track[];
   themeClassification?: ThemeClassification | null;
