@@ -7954,7 +7954,7 @@ function Dashboard() {
           <h1 className="sr-only">AI Engineering Insight Atlas</h1>
           <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
             Explore practical industry insights across six engineering domains. Transcript
-            extraction is still in progress, so the knowledge layer matures over time.
+            extraction is still in progress, so the knowledge layer will mature over time.
           </p>
         </div>
         <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
