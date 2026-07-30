@@ -4,15 +4,17 @@ import { Clock } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   TRACKS,
-  VIDEOS,
   videoDuration,
   videoPublishedDate,
   videoTracks,
   videoThemes,
+  videoTags,
   videoYear,
   type Track,
   type Video,
 } from "@/data/videos";
+import { atlasTagLabel } from "@/data/catalog-taxonomy";
+import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "@/data/summaries";
 import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
 import type { IllustrativeExample, TalkInsight } from "@/data/talk-insights";
 import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
@@ -136,7 +138,7 @@ export const Route = createFileRoute("/")({
               "@id": `${siteUrl("/")}#website`,
               url: siteUrl("/"),
               name: "AI Engineering Insight Atlas",
-              description: "Explore practical industry insights across six engineering domains.",
+              description: "Explore practical industry insights across nine engineering domains.",
               inLanguage: "en",
             },
             {
@@ -151,8 +153,8 @@ export const Route = createFileRoute("/")({
               "@type": "ItemList",
               "@id": `${siteUrl("/")}#talks`,
               name: "AI engineering talks",
-              numberOfItems: VIDEOS.length,
-              itemListElement: VIDEOS.map((video, index) => ({
+              numberOfItems: LAST_KNOWN_GOOD_CATALOG.length,
+              itemListElement: LAST_KNOWN_GOOD_CATALOG.map((video, index) => ({
                 "@type": "ListItem",
                 position: index + 1,
                 url: `https://www.youtube.com/watch?v=${video.youtubeId}`,
@@ -187,8 +189,8 @@ function isoDuration(totalSeconds: number) {
   return `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}${seconds ? `${seconds}S` : ""}`;
 }
 
-const TRACK_SUMMARIES: Record<
-  Track,
+const LEGACY_TRACK_SUMMARIES: Record<
+  Exclude<Track, "Knowledge" | "Developer Workflows" | "Models & Training">,
   { claim: string; implication: string; whenToUse: string; caveat: string }
 > = {
   "System Design": {
@@ -253,7 +255,10 @@ const TRACK_SUMMARIES: Record<
   },
 };
 
-const TRACK_EXAMPLES: Record<Track, IllustrativeExample> = {
+const LEGACY_TRACK_EXAMPLES: Record<
+  Exclude<Track, "Knowledge" | "Developer Workflows" | "Models & Training">,
+  IllustrativeExample
+> = {
   "System Design": {
     situation:
       "An incident-response agent has accumulated one large prompt that mixes orchestration, tool instructions, and team policy.",
@@ -452,7 +457,8 @@ function Dashboard() {
       return (
         v.title.toLowerCase().includes(q) ||
         v.sourceChannel.toLowerCase().includes(q) ||
-        topics.some((topic) => topic.toLowerCase().includes(q))
+        topics.some((topic) => topic.toLowerCase().includes(q)) ||
+        videoTags(v).some((tag) => atlasTagLabel(tag).includes(q))
       );
     });
   }, [catalog.records, query, selectedThemes, year]);
@@ -590,7 +596,9 @@ function Dashboard() {
           <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
             AI/E
           </span>
-          <span className="font-display text-sm font-medium tracking-tight">AI Engineering Insights Atlas</span>
+          <span className="font-display text-sm font-medium tracking-tight">
+            AI Engineering Insights Atlas
+          </span>
         </a>
       </header>
 
@@ -605,7 +613,7 @@ function Dashboard() {
             <source srcSet="/hero-atlas.webp" type="image/webp" />
             <img
               src="/hero-atlas.png"
-              alt="AI Engineering Insight Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
+              alt="AI Engineering Insight Atlas. Build AI systems that survive reality. Nine illustrated panels represent System Design, Data and Eval, Reliability, Observability, Safety and Control, Deployment, Knowledge, Developer Workflows and Models and Training."
               width={1731}
               height={909}
               loading="eager"
@@ -618,7 +626,7 @@ function Dashboard() {
         <div className="mt-6 border-b border-ink/20 pb-10">
           <h1 className="sr-only">AI Engineering Insight Atlas</h1>
           <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
-            Explore practical industry insights across six engineering domains. Transcript
+            Explore practical industry insights across nine engineering domains. Transcript
             extraction is still in progress, so the knowledge layer will mature over time.
           </p>
         </div>
@@ -758,7 +766,7 @@ function Dashboard() {
                       <p className="mt-2 font-sans text-sm text-muted-foreground">
                         YouTube · {v.sourceChannel}
                       </p>
-                      <div className="mt-4 flex items-end justify-between gap-3 border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
+                      <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-2 border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
                         <span className="flex flex-wrap gap-x-3 gap-y-1">
                           {topics.length ? (
                             topics.map((topic) => {
@@ -776,7 +784,12 @@ function Dashboard() {
                             <span className="text-muted-foreground">No theme assigned</span>
                           )}
                         </span>
-                        <span className="text-ink group-hover:underline">Summary →</span>
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap text-ink group-hover:underline">
+                          <span>Summary</span>
+                          <span aria-hidden="true" className="tracking-normal">
+                            →
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </button>
@@ -920,6 +933,26 @@ function TrackIcon({ track, className = "h-4 w-4" }: { track: Track; className?:
         <rect x="2" y="18" width="4" height="4" />
         <rect x="18" y="18" width="4" height="4" />
         <path d="m12 7 5 5-5 5-5-5 5-5ZM6 4h12M4 6v12m16-12v12M6 20h12" />
+      </svg>
+    );
+  if (track === "Knowledge")
+    return (
+      <svg {...common}>
+        <path d="M4 6h16v12H4zM8 10h8M8 14h5" />
+        <path d="M7 3v3m10-3v3m-7 12v3m4-3v3" />
+      </svg>
+    );
+  if (track === "Developer Workflows")
+    return (
+      <svg {...common}>
+        <path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16" />
+      </svg>
+    );
+  if (track === "Models & Training")
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4m0 12v4M2 12h4m12 0h4M4.9 4.9l2.8 2.8m8.6 8.6 2.8 2.8m0-14.2-2.8 2.8m-8.6 8.6-2.8 2.8" />
       </svg>
     );
   return (
@@ -1143,6 +1176,7 @@ function EmbeddedPlayer({ video }: { video: Video }) {
 
 function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => void }) {
   const themes = videoThemes(video);
+  const tags = videoTags(video);
   const [insight, setInsight] = useState<TalkInsight | null>(() =>
     video.insightReviewStatus === "approved" ? null : getInsightContent(video),
   );
@@ -1154,8 +1188,7 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
     }
     setInsight(null);
     void import("@/data/talk-insights").then(({ talkInsightForVideo }) => {
-      if (!cancelled)
-        setInsight(getInsightContent(video, talkInsightForVideo(video)));
+      if (!cancelled) setInsight(getInsightContent(video, talkInsightForVideo(video)));
     });
     return () => {
       cancelled = true;
@@ -1197,6 +1230,11 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                   <span>{videoDuration(video)}</span>
                 </span>
               </DialogPrimitive.Description>
+              {tags.length > 0 && (
+                <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Tags: {tags.map(atlasTagLabel).join(" · ")}
+                </p>
+              )}
             </div>
             <div className="relative aspect-video overflow-hidden rounded-xl bg-ink">
               <EmbeddedPlayer video={video} />
@@ -1221,7 +1259,11 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                     className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
                   />
                   <div className="mt-5 space-y-5">
-                    <ExamplePart label="Why it matters" body={insight.implication} divider={false} />
+                    <ExamplePart
+                      label="Why it matters"
+                      body={insight.implication}
+                      divider={false}
+                    />
                     <ExamplePart label="Use it when" body={insight.whenToUse} divider={false} />
                   </div>
                   <div className="mt-5 border-t border-ink/10 pt-4">

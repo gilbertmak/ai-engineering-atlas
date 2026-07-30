@@ -1,4 +1,5 @@
 import publicCatalog from "@/data/atlas-public-catalog.json";
+import { catalogTags, catalogThemes } from "@/data/catalog-taxonomy";
 import type { Track, Video } from "@/data/videos";
 
 export type InsightReviewStatus = "approved" | "unmapped";
@@ -7,6 +8,7 @@ export type CatalogVideo = Video & {
   track: Track | null;
   tracks: Track[];
   themes: Track[];
+  tags: NonNullable<Video["tags"]>;
   insightReviewStatus: InsightReviewStatus;
 };
 
@@ -23,6 +25,10 @@ export type CatalogManifest = {
 };
 
 export const ATLAS_CATALOG_MANIFEST = publicCatalog.manifest as CatalogManifest;
-export const LAST_KNOWN_GOOD_CATALOG =
-  publicCatalog.records as readonly CatalogVideo[];
+const RAW_PUBLIC_CATALOG = publicCatalog.records as unknown as readonly CatalogVideo[];
 
+export const LAST_KNOWN_GOOD_CATALOG = RAW_PUBLIC_CATALOG.map((video) => ({
+  ...video,
+  themes: catalogThemes(video),
+  tags: catalogTags(video),
+}));

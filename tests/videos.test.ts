@@ -1,13 +1,35 @@
 import { describe, expect, test } from "bun:test";
 
-import { TRACKS, VIDEOS, videoDuration, videoYear } from "../src/data/videos";
+import {
+  TRACKS,
+  VIDEOS,
+  videoDuration,
+  videoTags,
+  videoThemes,
+  videoYear,
+} from "../src/data/videos";
+import { LAST_KNOWN_GOOD_CATALOG } from "../src/lib/atlas-catalog";
 import { talkInsightForVideo } from "../src/data/talk-insights";
 
 describe("verified video catalog", () => {
-  test("uses six unique tracks", () => {
-    expect(TRACKS).toHaveLength(6);
-    expect(new Set(TRACKS.map((track) => track.name)).size).toBe(6);
-    expect(new Set(TRACKS.map((track) => track.code)).size).toBe(6);
+  test("uses nine unique themes", () => {
+    expect(TRACKS).toHaveLength(9);
+    expect(new Set(TRACKS.map((track) => track.name)).size).toBe(9);
+    expect(new Set(TRACKS.map((track) => track.code)).size).toBe(9);
+  });
+
+  test("adds metadata-derived themes and tags without replacing reviewed themes", () => {
+    expect(LAST_KNOWN_GOOD_CATALOG).toHaveLength(984);
+    expect(LAST_KNOWN_GOOD_CATALOG.some((video) => videoThemes(video).includes("Knowledge"))).toBe(
+      true,
+    );
+    expect(
+      LAST_KNOWN_GOOD_CATALOG.some((video) => videoThemes(video).includes("Developer Workflows")),
+    ).toBe(true);
+    expect(
+      LAST_KNOWN_GOOD_CATALOG.some((video) => videoThemes(video).includes("Models & Training")),
+    ).toBe(true);
+    expect(LAST_KNOWN_GOOD_CATALOG.some((video) => videoTags(video).length > 0)).toBe(true);
   });
 
   test("contains only complete, unique source records", () => {

@@ -4,13 +4,14 @@ import { z } from "zod";
 import { withAudit } from "../audit";
 
 import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "../../../data/summaries";
-import { TRACKS, VIDEOS } from "../../../data/videos";
+import { TRACKS, videoThemes } from "../../../data/videos";
+import { LAST_KNOWN_GOOD_CATALOG } from "../../atlas-catalog";
 
 export default defineTool({
   name: "list_tracks",
   title: "List tracks",
   description:
-    "List the six AI engineering tracks with talk counts and, optionally, the editorial synthesis for each track.",
+    "List the nine AI engineering themes with talk counts and, optionally, the editorial synthesis for each theme.",
   inputSchema: {
     includeSummaries: z
       .boolean()
@@ -22,7 +23,8 @@ export default defineTool({
     const tracks = TRACKS.map((track) => ({
       code: track.code,
       name: track.name,
-      talkCount: VIDEOS.filter((video) => video.track === track.name).length,
+      talkCount: LAST_KNOWN_GOOD_CATALOG.filter((video) => videoThemes(video).includes(track.name))
+        .length,
       ...(includeSummaries
         ? { summary: { ...TRACK_SUMMARIES[track.name], example: TRACK_EXAMPLES[track.name] } }
         : {}),

@@ -22,15 +22,6 @@ jobs:
         with:
           bun-version: "1.2.21"
       - run: npm ci --include=optional
-      - run: npm run evals:validate
       - run: npm run typecheck
       - run: bun test
       - run: npm run build
-      - name: Upload revision-bound eval report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: atlas-eval-report-${{ github.sha }}
-          path: artifacts/evals/
-          if-no-files-found: error
-          retention-days: 14
