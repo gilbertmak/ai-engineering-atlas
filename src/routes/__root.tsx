@@ -77,20 +77,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI Engineering Insights" },
+      { title: "AI Engineering Insights Atlas" },
       {
         name: "description",
         content:
           "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment",
       },
-      { property: "og:title", content: "AI Engineering Insights" },
+      { property: "og:title", content: "AI Engineering Insights Atlas" },
       {
         property: "og:description",
         content: "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AI Engineering Insights" },
+      { name: "twitter:title", content: "AI Engineering Insights Atlas" },
       { name: "twitter:description", content: "A curated dashboard of AI engineering talks so you can read about it and decide if a full listen is worth the time investment" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/tQa4xTjLFUWPhrTIig0NHNRoqLP2/social-images/social-1785428876593-ai-engineering-insights-hero.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/tQa4xTjLFUWPhrTIig0NHNRoqLP2/social-images/social-1785428876593-ai-engineering-insights-hero.webp" },

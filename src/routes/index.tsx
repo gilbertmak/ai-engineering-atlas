@@ -602,6 +602,7 @@ function Dashboard() {
         </a>
       </header>
 
+      <main>
       {/* HERO */}
       <section
         id="top"
@@ -842,10 +843,11 @@ function Dashboard() {
           </div>
         )}
       </section>
+      </main>
 
       <footer className="border-t border-ink/20">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          <span>© Video Atlas · local reviewed projection</span>
+          <span>© AI Engineering Insights · local reviewed projection</span>
           <span className="flex items-center gap-4">
             <a href="/analytics" className="hover:text-ink">
               Analytics debug
