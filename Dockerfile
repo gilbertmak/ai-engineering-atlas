@@ -3,7 +3,7 @@ FROM node:22-alpine AS build
 ENV NITRO_PRESET=node-server
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=optional
 COPY . .
 RUN npm run build
 
