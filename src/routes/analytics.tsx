@@ -7,12 +7,20 @@ export const Route = createFileRoute("/analytics")({
   head: () => ({
     links: [{ rel: "canonical", href: siteUrl("/analytics") }],
     meta: [
-      { title: "Analytics debug · AI Engineering Insights" },
+      { title: "Analytics debug · AI Engineering Insights Atlas" },
       {
         name: "description",
         content:
           "Live client-side event, error, and performance timing stream for the AI Engineering Insights app.",
       },
+      { property: "og:title", content: "Analytics debug · AI Engineering Insights Atlas" },
+      {
+        property: "og:description",
+        content:
+          "Live client-side event, error, and performance timing stream for AI Engineering Insights Atlas.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -100,8 +108,10 @@ function AnalyticsDebugPage() {
         </span>
       </header>
 
-      <section className="mx-auto max-w-[1200px] px-6 pt-8">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <main className="mx-auto max-w-[1200px]">
+      <section className="px-6 pt-8">
+        <h1 className="font-display text-2xl md:text-3xl">Analytics debug stream</h1>
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           <Stat label="Events" value={stats.event} />
           <Stat label="Errors" value={stats.error} tone="danger" />
           <Stat label="Perf marks" value={stats.perf} />
