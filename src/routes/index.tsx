@@ -135,7 +135,7 @@ export const Route = createFileRoute("/")({
               "@id": `${siteUrl("/")}#website`,
               url: siteUrl("/"),
               name: "AI Engineer Video Atlas",
-              description: "Explore latest industry developments across six practical themes.",
+              description: "Explore practical industry insights across six engineering domains.",
               inLanguage: "en",
             },
             {
@@ -7950,13 +7950,9 @@ function Dashboard() {
             />
           </picture>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 border-b border-ink/20 pb-10 md:grid-cols-[1fr_1.15fr] md:gap-12">
-          <div>
-            <h1 className="font-display text-3xl leading-[0.95] md:text-5xl">
-              Explore latest industry developments across six practical themes.
-            </h1>
-          </div>
-          <p className="max-w-xl self-end font-sans text-base leading-relaxed text-muted-foreground md:ml-0 md:text-lg">
+        <div className="mt-6 border-b border-ink/20 pb-10">
+          <h1 className="sr-only">AI Engineering Insight Atlas</h1>
+          <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
             Explore practical industry insights across six engineering domains. Transcript
             extraction is still in progress, so the knowledge layer matures over time.
           </p>
