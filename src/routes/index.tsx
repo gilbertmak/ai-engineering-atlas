@@ -16,6 +16,7 @@ import {
 import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
 import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
+import { siteUrl } from "@/lib/site";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 
@@ -116,20 +117,74 @@ function CardSkeleton() {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/") },
       {
         property: "og:image",
-        content:
-          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
+        content: siteUrl("/hero-atlas.webp"),
       },
       {
         name: "twitter:image",
-        content:
-          "https://id-preview--479a156a-0221-4e65-9751-9ad7cb8bd539.lovable.app/hero-atlas.png",
+        content: siteUrl("/hero-atlas.webp"),
       },
+      {
+        "script:ld+json": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "@id": `${siteUrl("/")}#website`,
+              url: siteUrl("/"),
+              name: "AI Engineer Video Atlas",
+              description: "Explore latest industry developments across six practical themes.",
+              inLanguage: "en",
+            },
+            {
+              "@type": "CollectionPage",
+              "@id": `${siteUrl("/")}#collection`,
+              url: siteUrl("/"),
+              name: "AI Engineer Video Atlas",
+              isPartOf: { "@id": `${siteUrl("/")}#website` },
+              mainEntity: { "@id": `${siteUrl("/")}#talks` },
+            },
+            {
+              "@type": "ItemList",
+              "@id": `${siteUrl("/")}#talks`,
+              name: "AI engineering talks",
+              numberOfItems: VIDEOS.length,
+              itemListElement: VIDEOS.map((video, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                url: `https://www.youtube.com/watch?v=${video.youtubeId}`,
+                item: {
+                  "@type": "VideoObject",
+                  name: video.title,
+                  description: `${video.title} from ${video.sourceChannel}.`,
+                  uploadDate: video.publishedAt,
+                  duration: isoDuration(video.durationSeconds),
+                  thumbnailUrl: `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`,
+                  contentUrl: `https://www.youtube.com/watch?v=${video.youtubeId}`,
+                  embedUrl: `https://www.youtube.com/embed/${video.youtubeId}`,
+                },
+              })),
+            },
+          ],
+        },
+      },
+    ],
+    links: [
+      { rel: "canonical", href: siteUrl("/") },
+      { rel: "preload", href: "/hero-atlas.webp", as: "image", fetchPriority: "high" },
     ],
   }),
   component: Dashboard,
 });
+
+function isoDuration(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}${seconds ? `${seconds}S` : ""}`;
+}
 
 const TRACK_SUMMARIES: Record<
   Track,
@@ -7889,13 +7944,19 @@ function Dashboard() {
         className="mx-auto max-w-[1400px] px-6 pt-8"
       >
         <div className="crosshair rounded-xl border border-ink/90 bg-paper p-3 shadow-[0_20px_60px_-20px_rgba(20,20,40,0.25)] md:p-5">
-          <img
-            src="/hero-atlas.png"
-            alt="AI Engineer Video Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
-            width={1731}
-            height={909}
-            className="block h-auto w-full rounded-lg border border-ink/80"
-          />
+          <picture>
+            <source srcSet="/hero-atlas.webp" type="image/webp" />
+            <img
+              src="/hero-atlas.png"
+              alt="AI Engineer Video Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
+              width={1731}
+              height={909}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="block h-auto w-full rounded-lg border border-ink/80"
+            />
+          </picture>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-6 border-b border-ink/20 pb-10 md:grid-cols-[1fr_1.15fr] md:gap-12">
           <div>
