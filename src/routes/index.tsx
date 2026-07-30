@@ -7927,14 +7927,6 @@ function Dashboard() {
           </span>
           <span className="font-display text-sm font-medium tracking-tight">Video Atlas</span>
         </a>
-        <a
-          href="https://www.youtube.com/@aiDotEngineer"
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-[11px] uppercase tracking-widest text-ink hover:underline"
-        >
-          Channel ↗
-        </a>
       </header>
 
       {/* HERO */}
@@ -7948,7 +7940,7 @@ function Dashboard() {
             <source srcSet="/hero-atlas.webp" type="image/webp" />
             <img
               src="/hero-atlas.png"
-              alt="AI Engineer Video Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
+              alt="AI Engineering Insight Atlas. Build AI systems that survive reality. Six visual panels represent system design, data & eval, reliability, observability, safety & control, and deployment."
               width={1731}
               height={909}
               loading="eager"
