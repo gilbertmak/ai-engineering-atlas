@@ -120,7 +120,7 @@ function Consent() {
           Authorize access
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Connect {clientName} to AI Engineering Summary
+          Connect {clientName} to AI Engineering Insights
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
           This lets {clientName} use this app as you: it can search the talk catalog, read talk
