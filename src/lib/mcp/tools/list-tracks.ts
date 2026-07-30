@@ -1,6 +1,8 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
+import { withAudit } from "../audit";
+
 import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "../../../data/summaries";
 import { TRACKS, VIDEOS } from "../../../data/videos";
 
@@ -16,7 +18,7 @@ export default defineTool({
       .describe("Include the claim/implication/when-to-use/caveat synthesis for each track."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: ({ includeSummaries }) => {
+  handler: withAudit("list_tracks", ({ includeSummaries }) => {
     const tracks = TRACKS.map((track) => ({
       code: track.code,
       name: track.name,
@@ -30,5 +32,5 @@ export default defineTool({
       content: [{ type: "text", text: JSON.stringify({ tracks }, null, 2) }],
       structuredContent: { tracks },
     };
-  },
+  }),
 });

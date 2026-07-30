@@ -1,6 +1,8 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
+import { withAudit } from "../audit";
+
 import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "../../../data/summaries";
 import { VIDEOS } from "../../../data/videos";
 import { serializeVideo } from "./search-talks";
@@ -14,7 +16,7 @@ export default defineTool({
     id: z.string().describe("Talk id (e.g. v21), catalog code (e.g. aie-021), or YouTube video id."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: ({ id }) => {
+  handler: withAudit("get_talk_summary", ({ id }) => {
     const key = id.trim().toLowerCase();
     const video = VIDEOS.find(
       (item) =>
@@ -43,5 +45,5 @@ export default defineTool({
       content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
       structuredContent: payload,
     };
-  },
+  }),
 });

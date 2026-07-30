@@ -1,6 +1,8 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
+import { withAudit } from "../audit";
+
 import { TRACKS, VIDEOS, videoDuration, videoYear } from "../../../data/videos";
 
 export const TRACK_NAMES = TRACKS.map((track) => track.name);
@@ -33,7 +35,7 @@ export default defineTool({
     limit: z.number().int().optional().describe("Maximum number of results (default 20)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: ({ query, track, year, limit }) => {
+  handler: withAudit("search_talks", ({ query, track, year, limit }) => {
     const needle = query?.trim().toLowerCase() ?? "";
     const matches = VIDEOS.filter((video) => {
       if (track && video.track.toLowerCase() !== track.toLowerCase()) return false;
@@ -49,5 +51,5 @@ export default defineTool({
       content: [{ type: "text", text: JSON.stringify({ count: results.length, results }, null, 2) }],
       structuredContent: { count: results.length, results },
     };
-  },
+  }),
 });
