@@ -203,6 +203,7 @@ function AnalyticsDebugPage() {
           )}
         </div>
       </section>
+      </main>
     </div>
   );
 }
