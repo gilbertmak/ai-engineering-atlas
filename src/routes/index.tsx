@@ -1237,21 +1237,39 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
               ) : (
                 <div
                   aria-live="polite"
-                  className="mt-3 h-24 animate-pulse rounded-xl bg-muted"
+                  className="mt-4 space-y-5"
                   aria-label="Loading reviewed insight"
                 >
                   <span className="sr-only">Loading reviewed insight</span>
+                  <div className="space-y-2" aria-hidden="true">
+                    <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
+                  </div>
+                  <div className="space-y-2 border-t border-ink/10 pt-4" aria-hidden="true">
+                    <div className="h-2.5 w-24 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+                  </div>
                 </div>
               )}
             </section>
-            <a
-              href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper"
-            >
-              Open on YouTube <span>↗</span>
-            </a>
+            {insight ? (
+              <a
+                href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-6 flex w-full items-center justify-between rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper"
+              >
+                Open on YouTube <span>↗</span>
+              </a>
+            ) : (
+              <div
+                aria-hidden="true"
+                data-testid="modal-action-skeleton"
+                className="mt-6 h-11 w-full animate-pulse rounded-xl bg-muted"
+              />
+            )}
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

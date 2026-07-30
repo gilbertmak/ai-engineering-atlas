@@ -109,6 +109,8 @@ describe("Atlas release evals", () => {
       'import { TALK_INSIGHTS, type IllustrativeExample, type TalkInsight } from "@/data/talk-insights"',
     );
     expect(source).toContain('aria-label="Loading reviewed insight"');
+    expect(source).toContain('data-testid="modal-action-skeleton"');
+    expect(source).toContain("{insight ? (");
   });
 
   test("Lovable MCP, OAuth and Supabase paths remain present", () => {
