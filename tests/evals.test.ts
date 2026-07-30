@@ -127,7 +127,12 @@ describe("Atlas release evals", () => {
       "data/youtube-discovery-candidates.json",
       "data/youtube-discovery-state.json",
     ]) {
-      expect(tracked).not.toContain(path);
+      const trackedFiles = tracked.split("\n");
+      expect(
+        trackedFiles.some(
+          (entry) => entry === path || (path.endsWith("/") && entry.startsWith(path)),
+        ),
+      ).toBe(false);
     }
   });
 

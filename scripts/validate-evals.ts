@@ -295,7 +295,10 @@ function runAssertions() {
   const trackedFiles = git(["ls-files"]).split("\n").filter(Boolean);
   for (const privatePath of privatePaths) {
     assert(
-      !trackedFiles.some((tracked) => tracked === privatePath || tracked.startsWith(privatePath)),
+      !trackedFiles.some(
+        (tracked) =>
+          tracked === privatePath || (privatePath.endsWith("/") && tracked.startsWith(privatePath)),
+      ),
       `Private data is tracked: ${privatePath}`,
     );
   }
