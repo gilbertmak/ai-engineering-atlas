@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { TRACKS, VIDEOS, videoDuration, videoTracks, videoYear } from "../src/data/videos";
+import { TRACKS, VIDEOS, videoDuration, videoYear } from "../src/data/videos";
 
 describe("verified video catalog", () => {
   test("uses six unique tracks", () => {
@@ -10,7 +10,7 @@ describe("verified video catalog", () => {
   });
 
   test("contains only complete, unique source records", () => {
-    expect(VIDEOS).toHaveLength(15);
+    expect(VIDEOS).toHaveLength(14);
     expect(new Set(VIDEOS.map((video) => video.id)).size).toBe(VIDEOS.length);
     expect(new Set(VIDEOS.map((video) => video.code)).size).toBe(VIDEOS.length);
     expect(new Set(VIDEOS.map((video) => video.youtubeId)).size).toBe(VIDEOS.length);
@@ -23,7 +23,6 @@ describe("verified video catalog", () => {
       expect(video.durationSeconds).toBeGreaterThan(0);
       expect(videoDuration(video)).toMatch(/^(?:\d+:)?\d{1,2}:\d{2}$/);
       expect(knownTracks.has(video.track)).toBe(true);
-      expect(videoTracks(video)).toEqual([video.track]);
       expect(Number.isNaN(Date.parse(video.publishedAt))).toBe(false);
       expect(Date.parse(video.publishedAt)).toBeLessThanOrEqual(Date.now());
       expect(videoYear(video)).toBe(new Date(video.publishedAt).getUTCFullYear());
@@ -38,7 +37,7 @@ describe("verified video catalog", () => {
           a.youtubeId.localeCompare(b.youtubeId),
       ),
     );
-    expect(VIDEOS[0]?.youtubeId).toBe("Yk87oUPVaxU");
+    expect(VIDEOS[0]?.youtubeId).toBe("SKDJo2CopRs");
   });
 
   test("does not publish the unrelated legacy Zig source", () => {

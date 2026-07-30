@@ -1,10 +1,11 @@
 # AI Engineering Insight Atlas
 
-AI Engineering Insight Atlas is a personal learning project for exploring practical lessons from
-AI engineering talks. It organises videos across six domains and presents concise summaries for
-readers who want the main engineering ideas without watching every session end to end.
+AI Engineering Insight Atlas is a Lovable-compatible TanStack Start application for exploring
+practical lessons from AI engineering talks. It organises the catalog across six engineering
+tracks and presents concise editorial summaries for readers who want the main ideas without
+watching every session end to end.
 
-The six domains are:
+The six tracks are:
 
 - System Design
 - Data & Eval
@@ -13,43 +14,62 @@ The six domains are:
 - Safety & Control
 - Deployment
 
-## What the Atlas provides
+## What the application provides
 
-- Search and filtering by theme, year and topic
+- Search and filtering by track, year and topic
 - A responsive gallery of source videos
-- Modal summaries with practical implications, use cases and caveats
-- Timestamped references where reviewed transcript evidence is available
-- Direct links to the original YouTube videos
-- A versioned catalog API with a bundled last-known-good fallback
+- Accessible detail modals with claims, implications, use cases, caveats and examples
+- Direct links to the original YouTube sources
+- MCP tools for searching talks, listing tracks and retrieving a talk summary
+- Supabase-backed OAuth routes for authenticated MCP access
+- Audit events for MCP tool calls
 
-Transcript extraction and review are still in progress. A video appearing in the catalog does not
-automatically mean that its insight summary is transcript-backed.
+Transcript extraction and review are still in progress. The current summaries are editorial track
+syntheses unless a talk has been explicitly reviewed against timestamped evidence. A video appearing
+in the catalog does not automatically mean that its summary is transcript-backed.
 
-## Evidence and source boundaries
+## Source and rights boundary
 
-The public application consumes a reviewed catalog projection. It does not expose raw discovery
-candidates, credentials, reviewer notes or private transcript files.
+The Atlas links to public YouTube sources and does not claim ownership of their videos. All rights
+belong to the respective owners.
 
-- Source discovery uses the official YouTube Data API for public metadata.
-- Discovery results remain private candidates until they pass review and publication controls.
-- Transcript-derived evidence is published only after its video identity, digest, review state,
-  rights state and timestamps pass validation.
-- Metadata-only records must not be presented as transcript-backed insight.
-- A YouTube Data API key does not grant access to caption downloads. Caption operations require
-  separate OAuth authorisation.
+- Source metadata is verified before it is shown in the catalog.
+- Transcript-derived claims require explicit review and timestamped evidence.
+- Do not treat editorial track synthesis as speaker-attributed transcript evidence.
+- Do not commit raw transcripts, reviewer notes, API keys, OAuth tokens or service-role credentials.
+- YouTube Data API credentials belong in trusted server-side or worker environments only.
 
-All video rights belong to their respective owners. The Atlas links back to the original sources.
+## Architecture
+
+```text
+Browser
+  |
+  v
+TanStack Start application
+  |
+  +-- six-track video catalog and editorial summaries
+  +-- accessible detail modal and YouTube source links
+  +-- /auth and Lovable OAuth consent routes
+  `-- /mcp read-only tools
+        |
+        +-- Supabase OAuth issuer and token claims
+        +-- audited tool calls
+        `-- search_talks, get_talk_summary, list_tracks
+```
+
+The MCP surface is read-only. OAuth is issued by Supabase and MCP tools validate authenticated
+claims before returning catalog data. The browser never receives a service-role key.
 
 ## Technology
 
 - React 19
 - TanStack Start and TanStack Router
 - TypeScript
-- Vite
-- Tailwind CSS
-- Nitro
-- Bun for tests and local worker scripts
-- Lovable-compatible deployment configuration
+- Vite and Nitro
+- Tailwind CSS and Radix UI
+- Lovable MCP SDK
+- Supabase Auth and database types
+- Bun for tests
 
 ## Local development
 
@@ -57,7 +77,8 @@ All video rights belong to their respective owners. The Atlas links back to the 
 
 - Node.js 22
 - npm
-- Bun 1.2.21 or a compatible version for tests and worker scripts
+- Bun for the test suite
+- A Lovable/Supabase project when exercising OAuth or MCP routes
 
 ### Start the application
 
@@ -69,92 +90,70 @@ npm run dev
 
 The development server prints its local URL after startup.
 
+Set these values when connecting the app to Lovable Cloud or Supabase:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_PROJECT_ID=
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+Only the publishable key may be exposed through a `VITE_` variable. Keep
+`SUPABASE_SERVICE_ROLE_KEY` server-side and never commit a populated `.env` file.
+
 `VITE_SITE_URL` controls canonical, sitemap and social-preview URLs. Set it to the final Lovable or
 custom deployment origin.
 
-Never place API keys or other secrets in a `VITE_` environment variable. Vite exposes those values
-to browser code.
-
 ## Validation commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run typecheck` | Check TypeScript types |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run the Bun test suite |
-| `npm run build` | Build the production application |
-| `npm run verify:sources` | Verify catalog source metadata |
-| `npm run build:transcript-projection` | Build a reviewed local transcript projection |
-| `npm run discover:sources` | Discover metadata candidates using the official YouTube API |
+| Command                  | Purpose                            |
+| ------------------------ | ---------------------------------- |
+| `npm run typecheck`      | Check TypeScript types             |
+| `npm run lint`           | Run ESLint                         |
+| `npm test`               | Run the Bun test suite             |
+| `npm run build`          | Build the production application   |
+| `npm run verify:sources` | Verify catalog source metadata     |
+| `npm run format`         | Format project files with Prettier |
 
-Run the production-readiness checks with:
+## MCP tools
 
-```bash
-./ops/validate-production-readiness.sh
-```
+The MCP manifest exposes three read-only tools:
 
-## Architecture
+- `search_talks` searches by free text, track and year.
+- `get_talk_summary` returns one talk’s metadata and editorial synthesis.
+- `list_tracks` returns the six tracks with talk counts and optional summaries.
 
-```text
-Browser
-  |
-  v
-TanStack application
-  |
-  +-- reviewed catalog API
-  |     |
-  |     +-- persisted versioned projection
-  |     `-- bundled last-known-good fallback
-  |
-  `-- public YouTube source links
-
-Private worker environment
-  |
-  +-- paced YouTube metadata discovery
-  +-- review-required candidate handoff
-  `-- validated transcript projection build
-```
-
-The browser has no discovery credentials and no publication capability. Discovery and transcript
-processing are separate server-side workflows that fail closed when required evidence or review
-state is missing.
+The OAuth issuer is the project’s Supabase Auth host. Configure the Lovable MCP manifest and
+Supabase project before testing an authenticated client.
 
 ## Deployment
 
-The application is designed to build in Lovable and GitHub Actions using:
+Lovable is the primary deployment environment. The production build is created with:
 
 ```bash
 npm ci --include=optional
 npm run build
 ```
 
-Linux native packages used by Rolldown, Lightning CSS and Tailwind are declared as optional
-dependencies for glibc and Alpine-compatible builds.
+The repository includes Linux optional bindings for Rolldown, Lightning CSS and Tailwind’s native
+oxide package so the build can run in glibc and Alpine-based environments.
 
-A hardened local Docker deployment is also available:
+Before release, verify that:
 
-```bash
-cp .env.example .env
-docker compose up --build
-```
-
-Docker Compose binds the service to `127.0.0.1` by default. Keep it private until a separately
-reviewed TLS proxy and access-control boundary are in place.
-
-## Project documentation
-
-- [Catalog API](docs/catalog-api.md)
-- [Source discovery](docs/source-discovery.md)
-- [Transcript enrichment](docs/transcript-enrichment.md)
-- [Operations and recovery](docs/operations.md)
-- [Transcript processing handoff](docs/transcript-processing-handoff-2026-07-30.md)
-- [Project-local transcript batch skill](skills/atlas-transcript-batch/SKILL.md)
+- Supabase OAuth issuer and audience match the deployed project.
+- Server-only secrets are configured through the deployment environment.
+- MCP tools return only the intended read-only catalog data.
+- Source and transcript claims have the required review evidence.
+- Canonical and social URLs point to the final deployment origin.
 
 ## Contribution guardrails
 
-- Do not commit API keys, OAuth tokens, raw transcripts or private discovery state.
-- Do not publish a transcript-backed claim without approved timestamped evidence.
-- Keep discovery candidates separate from the public catalog projection.
-- Preserve the generated TanStack route tree by editing route files rather than
-  `src/routeTree.gen.ts`.
+- Preserve the MCP/OAuth/Supabase route and middleware boundaries.
+- Do not expose service-role credentials to browser modules.
+- Do not add a transcript-backed claim without approved timestamped evidence.
+- Keep YouTube source links and rights notices intact.
+- Do not hand-edit `src/routeTree.gen.ts`; regenerate it through the normal TanStack build.
 - Run typecheck, lint, tests and the production build before merging.
