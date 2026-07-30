@@ -1,102 +1,68 @@
 import { VIDEOS } from "../src/data/videos";
+import {
+  discoverYouTubeCatalog,
+  loadDiscoveryState,
+  saveDiscoveryState,
+} from "./youtube-discovery";
+import { saveDiscoveryCandidateHandoff } from "./discovery-candidate-handoff";
 
-type Candidate = {
-  youtubeId: string;
-  title: string;
-  channel: string;
-  score: number;
-};
-
-const stopwords = new Set([
-  "a",
-  "an",
-  "and",
-  "at",
-  "for",
-  "from",
-  "how",
-  "in",
-  "of",
-  "on",
-  "the",
-  "to",
-  "with",
-]);
-
-function tokens(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .split(/\s+/)
-    .filter((token) => token.length > 1 && !stopwords.has(token));
-}
-
-function candidateScore(targetTitle: string, speaker: string, title: string, channel: string) {
-  const targetTokens = new Set(tokens(targetTitle));
-  const candidateTokens = new Set(tokens(title));
-  const overlap = [...targetTokens].filter((token) => candidateTokens.has(token)).length;
-  const titleScore = targetTokens.size === 0 ? 0 : overlap / targetTokens.size;
-  const speakerTokens = tokens(speaker).filter((token) => !["team", "independent"].includes(token));
-  const speakerScore = speakerTokens.some((token) => candidateTokens.has(token)) ? 0.2 : 0;
-  const channelScore = channel.toLowerCase() === "ai engineer" ? 0.15 : 0;
-  return Number(Math.min(1, titleScore + speakerScore + channelScore).toFixed(3));
-}
-
-async function oembed(youtubeId: string) {
-  const url = new URL("https://www.youtube.com/oembed");
-  url.searchParams.set("url", `https://www.youtube.com/watch?v=${youtubeId}`);
-  url.searchParams.set("format", "json");
-  const response = await fetch(url);
-  if (!response.ok) return null;
-  return (await response.json()) as { title?: string; author_name?: string };
-}
-
-const requestedCodes = new Set(process.argv.slice(2));
-const catalog =
-  requestedCodes.size === 0 ? VIDEOS : VIDEOS.filter((video) => requestedCodes.has(video.code));
-const discoveries = [];
-
-for (const video of catalog) {
-  const query = encodeURIComponent(`${video.title} ${video.sourceChannel} AI Engineer`);
-  const response = await fetch(`https://www.youtube.com/results?search_query=${query}`, {
-    headers: { "user-agent": "Mozilla/5.0" },
+export async function runDiscovery({ full = false, scheduled = false } = {}) {
+  if (scheduled && process.env.ATLAS_DISCOVERY_SCHEDULE_ENABLED !== "true") {
+    throw new Error(
+      "Scheduled discovery is disabled. Set ATLAS_DISCOVERY_SCHEDULE_ENABLED=true in the private worker environment after approval.",
+    );
+  }
+  const statePath = process.env.YOUTUBE_DISCOVERY_STATE_PATH ?? "data/youtube-discovery-state.json";
+  const candidatePath =
+    process.env.YOUTUBE_DISCOVERY_CANDIDATES_PATH ?? "data/youtube-discovery-candidates.json";
+  const state = await loadDiscoveryState(statePath);
+  const result = await discoverYouTubeCatalog({
+    apiKey: process.env.YOUTUBE_DATA_API_KEY ?? "",
+    uploadsPlaylistId:
+      process.env.YOUTUBE_DISCOVERY_UPLOADS_PLAYLIST_ID?.trim() || state.uploadsPlaylistId,
+    channelId: process.env.YOUTUBE_DISCOVERY_CHANNEL_ID?.trim() || undefined,
+    channelHandle: process.env.YOUTUBE_DISCOVERY_CHANNEL_HANDLE?.trim() || "aiDotEngineer",
+    knownYoutubeIds: [
+      ...new Set([...state.knownYoutubeIds, ...VIDEOS.map((video) => video.youtubeId)]),
+    ],
+    highWaterYoutubeId: state.highWaterYoutubeId,
+    full,
   });
-  const html = await response.text();
-  const ids = [
-    ...new Set([...html.matchAll(/"videoId":"([A-Za-z0-9_-]{11})"/g)].map((match) => match[1])),
-  ].slice(0, 10);
-
-  const candidates = (
-    await Promise.all(
-      ids.map(async (youtubeId): Promise<Candidate | null> => {
-        const metadata = await oembed(youtubeId);
-        if (!metadata?.title || !metadata.author_name) return null;
-        return {
-          youtubeId,
-          title: metadata.title,
-          channel: metadata.author_name,
-          score: candidateScore(
-            video.title,
-            video.sourceChannel,
-            metadata.title,
-            metadata.author_name,
-          ),
-        };
-      }),
-    )
-  )
-    .filter((candidate): candidate is Candidate => candidate !== null)
-    .sort((left, right) => right.score - left.score)
-    .slice(0, 3);
-
-  discoveries.push({
-    code: video.code,
-    catalogTitle: video.title,
-    catalogChannel: video.sourceChannel,
-    currentYoutubeId: video.youtubeId,
-    candidates,
+  const updatedAt = new Date().toISOString();
+  await saveDiscoveryState(statePath, {
+    version: 1,
+    uploadsPlaylistId: result.uploadsPlaylistId,
+    knownYoutubeIds: [
+      ...new Set([
+        ...state.knownYoutubeIds,
+        ...result.candidates.map((candidate) => candidate.youtubeId),
+      ]),
+    ],
+    highWaterYoutubeId: result.highWaterYoutubeId,
+    updatedAt,
   });
+  const candidateHandoff = await saveDiscoveryCandidateHandoff(
+    candidatePath,
+    updatedAt,
+    result.candidates,
+  );
+  return {
+    source: "youtube-data-api-v3",
+    fallback: "none",
+    full,
+    scheduled,
+    statePath,
+    candidatePath,
+    publicationStatus: candidateHandoff.publicationStatus,
+    updatedAt,
+    ...result,
+  };
 }
 
-console.log(JSON.stringify(discoveries, null, 2));
+if (import.meta.main) {
+  const args = new Set(process.argv.slice(2));
+  const full = args.delete("--full");
+  const scheduled = args.delete("--scheduled");
+  if (args.size) throw new Error("Only --full and --scheduled are supported.");
+  console.log(JSON.stringify(await runDiscovery({ full, scheduled })));
+}

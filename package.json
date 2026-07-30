@@ -11,6 +11,11 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "verify:sources": "bun scripts/verify-video-sources.ts",
+    "discover:sources": "bun scripts/discover-video-sources.ts",
+    "discover:sources:scheduled": "bun scripts/run-scheduled-discovery.ts",
+    "publish:discovery-metadata": "bun scripts/publish-discovery-metadata.ts",
+    "build:transcript-projection": "bun scripts/build-transcript-projection.ts",
+    "enrich:transcripts": "bun scripts/transcript-enrichment.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -90,5 +95,13 @@
   "overrides": {
     "@babel/core": "7.29.7",
     "js-yaml": "4.3.0"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "1.1.5",
+    "@rolldown/binding-linux-x64-musl": "1.1.5",
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "lightningcss-linux-x64-musl": "1.32.0",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.2",
+    "@tailwindcss/oxide-linux-x64-musl": "4.3.2"
   }
 }

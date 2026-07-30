@@ -11,11 +11,67 @@ export type Video = {
   code: string;
   title: string;
   sourceChannel: string;
-  track: Track;
+  track: Track | null;
+  tracks?: Track[];
+  themes?: Track[];
+  themeClassification?: ThemeClassification | null;
+  transcript?: TranscriptSummary;
+  evidence?: TranscriptEvidence[];
   publishedAt: string;
   durationSeconds: number;
   youtubeId: string;
+  contentStatus?: "editorial_track_synthesis" | "metadata_only";
 };
+
+export type ThemeClassification = {
+  source: "approved_local_metadata" | "approved_local_transcript";
+  basis: "metadata_review" | "transcript_evidence_review";
+  reviewedAt: string;
+  reviewerVersion: string;
+};
+
+export type TranscriptSummary = {
+  status:
+    "not_requested" | "acquired" | "unavailable" | "restricted" | "failed" | "stale" | "superseded";
+  availability: "available" | "unavailable" | "restricted" | "unknown";
+  sourceUrl: string;
+  provider: string;
+  sourceType: "youtube_caption" | "approved_transcript";
+  retrievedAt: string;
+  acquisitionRunId: string;
+  locale: string;
+  sourceVersion: string;
+  availabilityCheckedAt: string;
+  termsBasis: string;
+  rightsBasis: string;
+  redistributionAllowed: boolean;
+  attributionRequired: boolean;
+  reviewedAt: string | null;
+  digest: string;
+  reviewStatus: "approved" | "pending" | "rejected";
+  attributionEligible: boolean;
+};
+
+export type TranscriptEvidence = {
+  evidenceId: string;
+  videoId: string;
+  text: string;
+  timestampSeconds: number;
+  transcriptDigest: string;
+  status: "approved" | "retracted" | "superseded";
+  reviewedAt: string;
+  reviewerVersion: string;
+  speaker: string | null;
+  speakerAttributionEligible: boolean;
+};
+
+export function videoTracks(video: Pick<Video, "track" | "tracks">): Track[] {
+  return [...new Set([...(video.tracks ?? []), ...(video.track ? [video.track] : [])])];
+}
+
+export function videoThemes(video: Pick<Video, "track" | "tracks" | "themes">): Track[] {
+  return [...new Set(video.themes ?? videoTracks(video))];
+}
 
 export const TRACKS: { code: string; name: Track; token: string }[] = [
   { code: "01", name: "System Design", token: "track-1" },
@@ -32,6 +88,16 @@ const VERIFIED_AT = "2026-07-14T00:00:00+08:00";
 // This is the public, reachable source catalog. It is deliberately separate
 // from rejected legacy records so an unavailable source cannot leak into UI.
 const VERIFIED_VIDEOS: Video[] = [
+  {
+    id: "v25",
+    code: "aie-025",
+    title: "DeepSWE: A Contamination-Resistant Coding Benchmark — James Shi, Datacurve",
+    sourceChannel: "AI Engineer",
+    track: "Data & Eval",
+    publishedAt: "2026-07-26T11:10:56-07:00",
+    durationSeconds: 1054,
+    youtubeId: "Yk87oUPVaxU",
+  },
   {
     id: "v21",
     code: "aie-021",
