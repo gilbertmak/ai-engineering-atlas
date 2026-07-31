@@ -735,6 +735,7 @@ function Dashboard() {
             : visible.map((v, i) => {
                 const t = TRACKS.find((tr) => tr.name === videoThemes(v)[0]) ?? TRACKS[0]!;
                 const topics = videoThemes(v);
+                const tags = videoTags(v);
                 const eager = i < 3;
                 return (
                   <button
@@ -782,7 +783,9 @@ function Dashboard() {
                               );
                             })
                           ) : (
-                            <span className="text-muted-foreground">No theme assigned</span>
+                            <span className="text-muted-foreground">
+                              {tags.map(atlasTagLabel).join(" · ")}
+                            </span>
                           )}
                         </span>
                         <span className="inline-flex items-center gap-1 whitespace-nowrap text-ink group-hover:underline">

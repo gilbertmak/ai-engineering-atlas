@@ -10,6 +10,8 @@ export type Track =
   | "Models & Training";
 
 export type AtlasTag =
+  | "general-ai-engineering"
+  | "system-architecture"
   | "rag-retrieval"
   | "context-engineering"
   | "memory"
@@ -23,6 +25,7 @@ export type AtlasTag =
   | "inference"
   | "evals-benchmarks"
   | "security-governance"
+  | "reliability-engineering"
   | "observability"
   | "deployment-platform"
   | "multimodal"
