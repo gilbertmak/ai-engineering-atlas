@@ -29,7 +29,7 @@ describe("verified video catalog", () => {
     expect(
       LAST_KNOWN_GOOD_CATALOG.some((video) => videoThemes(video).includes("Models & Training")),
     ).toBe(true);
-    expect(LAST_KNOWN_GOOD_CATALOG.some((video) => videoTags(video).length > 0)).toBe(true);
+    expect(LAST_KNOWN_GOOD_CATALOG.every((video) => videoTags(video).length > 0)).toBe(true);
   });
 
   test("contains only complete, unique source records", () => {
