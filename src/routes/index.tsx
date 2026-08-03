@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Clock } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TRACKS,
   videoDuration,
@@ -13,15 +13,17 @@ import {
   type Track,
   type Video,
 } from "@/data/videos";
-import { atlasTagLabel } from "@/data/catalog-taxonomy";
+import { atlasTagLabel, atlasTagTheme } from "@/data/catalog-taxonomy";
 import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "@/data/summaries";
 import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
 import type { IllustrativeExample, TalkInsight } from "@/data/talk-insights";
 import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 import { siteUrl } from "@/lib/site";
+import { parseNumberedInsightText, splitInsightSentences } from "@/lib/insight-formatting";
 
 const SCROLL_KEY = "atlas:scroll-v1";
+const PAGE_SIZE = 12;
 
 function placeholderThumb(v: Video, token: string) {
   // Deterministic SVG placeholder when the YouTube thumbnail is unavailable.
@@ -463,7 +465,6 @@ function Dashboard() {
     });
   }, [catalog.records, query, selectedThemes, year]);
 
-  const PAGE_SIZE = 12;
   // Always start at PAGE_SIZE on both server and client to avoid a hydration
   // mismatch — the restored value from sessionStorage is applied in the
   // effect below, after hydration.
@@ -506,27 +507,55 @@ function Dashboard() {
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
 
+  const loadMore = useCallback(() => {
+    setVisibleCount((current) =>
+      current >= filtered.length ? current : Math.min(current + PAGE_SIZE, filtered.length),
+    );
+  }, [filtered.length]);
+
+  useEffect(() => {
+    if (visibleCount <= PAGE_SIZE) return;
+    setLoadAnnouncement(`Showing ${visibleCount} of ${filtered.length} talks.`);
+  }, [filtered.length, visibleCount]);
+
+  const loadIfNearViewport = useCallback(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const { top } = el.getBoundingClientRect();
+    const nearEnd =
+      window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1200;
+    if (top <= window.innerHeight + 600 || nearEnd) loadMore();
+  }, [loadMore]);
+
   useEffect(() => {
     if (!hasMore) return;
     const el = sentinelRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setVisibleCount((current) => {
-            const next = Math.min(current + PAGE_SIZE, filtered.length);
-            setLoadAnnouncement(
-              `${next - current} more talks loaded; showing ${next} of ${filtered.length}.`,
-            );
-            return next;
-          });
-        }
-      },
-      { rootMargin: "600px 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [hasMore, filtered.length]);
+    const io =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(
+            (entries) => {
+              if (entries.some((entry) => entry.isIntersecting)) loadMore();
+            },
+            { rootMargin: "600px 0px" },
+          );
+    io?.observe(el);
+    window.addEventListener("scroll", loadIfNearViewport, { passive: true });
+    window.addEventListener("resize", loadIfNearViewport);
+    document.addEventListener("scroll", loadIfNearViewport, { passive: true });
+    document.documentElement.addEventListener("scroll", loadIfNearViewport, { passive: true });
+    document.body.addEventListener("scroll", loadIfNearViewport, { passive: true });
+    loadIfNearViewport();
+    return () => {
+      io?.disconnect();
+      window.removeEventListener("scroll", loadIfNearViewport);
+      window.removeEventListener("resize", loadIfNearViewport);
+      document.removeEventListener("scroll", loadIfNearViewport);
+      document.documentElement.removeEventListener("scroll", loadIfNearViewport);
+      document.body.removeEventListener("scroll", loadIfNearViewport);
+    };
+  }, [hasMore, loadIfNearViewport, loadMore, visibleCount]);
 
   // Persist scroll position (throttled via rAF) and restore once the grid has
   // rendered enough cards to reach the saved offset.
@@ -589,7 +618,7 @@ function Dashboard() {
   }, [open]);
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div className="min-h-screen bg-paper text-ink" onWheel={loadIfNearViewport}>
       {/* Header */}
       <header className="mx-auto flex max-w-[1400px] items-center justify-between border-b border-ink/20 px-6 py-5">
         <a href="#top" className="flex items-center gap-3">
@@ -812,22 +841,17 @@ function Dashboard() {
           {loadAnnouncement}
         </span>
         {!booting && hasMore ? (
-          <div ref={sentinelRef} className="mt-10 flex justify-center pb-24">
-            <button
-              type="button"
-              onClick={() => {
-                setVisibleCount((current) => {
-                  const next = Math.min(current + PAGE_SIZE, filtered.length);
-                  setLoadAnnouncement(
-                    `${next - current} more talks loaded; showing ${next} of ${filtered.length}.`,
-                  );
-                  return next;
-                });
-              }}
-              className="min-h-11 rounded-xl border border-ink/30 bg-card px-5 py-3 font-mono text-[11px] uppercase tracking-widest shadow-[0_8px_24px_-14px_rgba(20,20,40,0.4)] transition hover:-translate-y-px hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]"
+          <div
+            ref={sentinelRef}
+            data-testid="atlas-infinite-scroll-sentinel"
+            className="mt-10 flex justify-center pb-24"
+          >
+            <span
+              aria-hidden="true"
+              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
             >
-              Load {Math.min(PAGE_SIZE, filtered.length - visibleCount)} more
-            </button>
+              Loading more talks…
+            </span>
           </div>
         ) : (
           !booting &&
@@ -1233,9 +1257,19 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                 </span>
               </DialogPrimitive.Description>
               {tags.length > 0 && (
-                <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Tags: {tags.map(atlasTagLabel).join(" · ")}
-                </p>
+                <div className="mt-3">
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Tags
+                  </div>
+                  <div className="mt-2 grid gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {tags.map((tag) => (
+                      <span key={tag} className="inline-flex items-center gap-2">
+                        <TrackIcon track={atlasTagTheme(tag)} className="h-3.5 w-3.5 text-ink" />
+                        <span>{atlasTagLabel(tag)}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
             <div className="relative aspect-video overflow-hidden rounded-xl bg-ink">
@@ -1265,8 +1299,15 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                       label="Why it matters"
                       body={insight.implication}
                       divider={false}
+                      leadOnly
                     />
-                    <ExamplePart label="Use it when" body={insight.whenToUse} divider={false} />
+                    <ExamplePart
+                      label="Use it when"
+                      body={insight.whenToUse}
+                      divider={false}
+                      leadOnly
+                      hideLead
+                    />
                   </div>
                   <div className="mt-5 border-t border-ink/10 pt-4">
                     <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -1325,38 +1366,115 @@ function ExamplePart({
   label,
   body,
   divider = true,
+  leadOnly = false,
+  hideLead = false,
 }: {
   label: string;
   body: string;
   divider?: boolean;
+  leadOnly?: boolean;
+  hideLead?: boolean;
 }) {
   return (
     <div className={divider ? "border-t border-ink/10 pt-3" : "pt-0"}>
       <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <InsightBody body={body} className="mt-1 font-sans text-sm leading-relaxed text-ink" />
+      <InsightBody
+        body={body}
+        className="mt-1 font-sans text-sm leading-relaxed text-ink"
+        leadOnly={leadOnly}
+        hideLead={hideLead}
+      />
     </div>
   );
 }
 
-function InsightBody({ body, className }: { body: string; className: string }) {
-  const points = body
-    .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
-    .map((point) => point.trim())
-    .filter(Boolean);
+function InsightBody({
+  body,
+  className,
+  leadOnly = false,
+  hideLead = false,
+}: {
+  body: string;
+  className: string;
+  leadOnly?: boolean;
+  hideLead?: boolean;
+}) {
+  const numbered = parseNumberedInsightText(body);
+
+  if (numbered.points.length > 1) {
+    if (numbered.lead && leadOnly) {
+      return (
+        <>
+          {!hideLead && <p className={className}>{numbered.lead}</p>}
+          <ol
+            className={`${className} insight-numbered-list insight-numbered-list--nested space-y-2`}
+          >
+            {numbered.points.map((point, index) => (
+              <li key={`${index}-${point}`}>
+                <span className="insight-numbered-label">{index + 1}.</span>
+                {capitalizeFirstAlphabet(point)}
+              </li>
+            ))}
+          </ol>
+        </>
+      );
+    }
+
+    if (numbered.lead) {
+      return (
+        <ol className={`${className} insight-numbered-list space-y-2`}>
+          <li>
+            <span className="insight-numbered-label">1.</span>
+            {numbered.lead}
+            <ol className="insight-numbered-list insight-numbered-list--nested mt-2 space-y-2">
+              {numbered.points.map((point, index) => (
+                <li key={`${index}-${point}`}>
+                  <span className="insight-numbered-label">1.{index + 1}</span>
+                  {capitalizeFirstAlphabet(point)}
+                </li>
+              ))}
+            </ol>
+          </li>
+        </ol>
+      );
+    }
+
+    return (
+      <ol className={`${className} insight-numbered-list space-y-2`}>
+        {numbered.points.map((point, index) => (
+          <li key={`${index}-${point}`}>
+            <span className="insight-numbered-label">{index + 1}.</span>
+            {capitalizeFirstAlphabet(point)}
+          </li>
+        ))}
+      </ol>
+    );
+  }
+
+  const points = splitInsightSentences(body);
 
   if (points.length > 1) {
     return (
-      <ol className={`${className} list-decimal space-y-2 pl-5`}>
+      <ol className={`${className} insight-numbered-list space-y-2`}>
         {points.map((point, index) => (
-          <li key={`${index}-${point}`}>{point}</li>
+          <li key={`${index}-${point}`}>
+            <span className="insight-numbered-label">{index + 1}.</span>
+            {capitalizeFirstAlphabet(point)}
+          </li>
         ))}
       </ol>
     );
   }
 
   return <p className={className}>{body}</p>;
+}
+
+function capitalizeFirstAlphabet(text: string): string {
+  const index = text.search(/[A-Za-z]/);
+  if (index < 0) return text;
+  return `${text.slice(0, index)}${text[index]!.toUpperCase()}${text.slice(index + 1)}`;
 }
 
 function Row({ label, body }: { label: string; body: React.ReactNode }) {

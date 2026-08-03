@@ -29,6 +29,8 @@ artifacts/evals/
 /subagent decisions/
 scripts/validate-evals.ts
 tests/evals.test.ts
+/tests/
+/docs/
 
 # Local Atlas projection, transcript evidence and discovery state are private
 # working data. They must never be staged or exposed through the public app.

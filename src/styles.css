@@ -130,3 +130,28 @@
   border-left: 0;
   border-top: 0;
 }
+
+/* Keep modal insight hierarchy readable at every depth: 1., 1.1, 1.1.1. */
+.insight-numbered-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.insight-numbered-list > li {
+  padding-left: 0;
+}
+
+.insight-numbered-list--nested {
+  margin-left: 0;
+}
+
+.insight-numbered-label {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.25rem;
+  min-width: 1.25rem;
+}
+
+.insight-numbered-list--nested .insight-numbered-label {
+  min-width: 1.9rem;
+}
