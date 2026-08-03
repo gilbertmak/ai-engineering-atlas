@@ -34,6 +34,16 @@ const SCOPE_LABELS: Record<string, string> = {
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Authorize access · AI Engineering Insights Atlas" },
+      {
+        name: "description",
+        content: "Approve or deny an AI client's request to access the AI Engineering Insights Atlas talk catalog.",
+      },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     authorization_id: typeof search.authorization_id === "string" ? search.authorization_id : "",
   }),
@@ -110,7 +120,7 @@ function Consent() {
           Authorize access
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">
-          Connect {clientName} to AI Engineering Summary
+          Connect {clientName} to AI Engineering Insights Atlas
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
           This lets {clientName} use this app as you: it can search the talk catalog, read talk
