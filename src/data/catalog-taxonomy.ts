@@ -18,6 +18,30 @@ const THEME_TAGS: Readonly<Record<Track, AtlasTag>> = {
   "Models & Training": "model-training",
 };
 
+const TAG_THEMES: Readonly<Record<AtlasTag, Track>> = {
+  "general-ai-engineering": "System Design",
+  "system-architecture": "System Design",
+  "rag-retrieval": "Knowledge",
+  "context-engineering": "Knowledge",
+  memory: "Knowledge",
+  "knowledge-graphs": "Knowledge",
+  "agentic-coding": "Developer Workflows",
+  "developer-tools": "Developer Workflows",
+  "software-factories": "Developer Workflows",
+  "model-training": "Models & Training",
+  "post-training": "Models & Training",
+  "synthetic-data": "Models & Training",
+  inference: "Models & Training",
+  "evals-benchmarks": "Data & Eval",
+  "security-governance": "Safety & Control",
+  "reliability-engineering": "Reliability",
+  observability: "Observability",
+  "deployment-platform": "Deployment",
+  multimodal: "Models & Training",
+  "voice-ai": "Models & Training",
+  "product-ux": "System Design",
+};
+
 const TITLE_THEME_RULES: ReadonlyArray<{ theme: Track; pattern: RegExp }> = [
   {
     theme: "Knowledge",
@@ -118,4 +142,8 @@ export function catalogTags(
 
 export function atlasTagLabel(tag: AtlasTag): string {
   return tag.replace(/-/g, " ");
+}
+
+export function atlasTagTheme(tag: AtlasTag): Track {
+  return TAG_THEMES[tag];
 }
