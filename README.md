@@ -15,7 +15,7 @@ The Atlas currently covers nine themes: System Design, Data & Eval, Reliability,
 - A responsive detail view with direct links back to the original YouTube talk
 - Lightweight tags for cross-cutting topics such as retrieval, agentic coding and model training
 
-Transcript review and timestamped evidence are still in progress.
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/ff66bf69-d2da-4cb8-866a-436840c3a159" />
 
 ## Source and rights boundary
 
