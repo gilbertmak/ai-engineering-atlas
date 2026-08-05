@@ -14,13 +14,19 @@ import {
   type Video,
 } from "@/data/videos";
 import { atlasTagLabel, atlasTagTheme } from "@/data/catalog-taxonomy";
+import { AtlasNavigation } from "@/components/atlas-navigation";
 import { TRACK_EXAMPLES, TRACK_SUMMARIES } from "@/data/summaries";
 import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
 import type { IllustrativeExample, TalkInsight } from "@/data/talk-insights";
 import { LAST_KNOWN_GOOD_CATALOG, type CatalogVideo } from "@/lib/atlas-catalog";
 import { trackEvent, logClientError, perfMark } from "@/lib/analytics";
 import { siteUrl } from "@/lib/site";
-import { parseNumberedInsightText, splitInsightSentences } from "@/lib/insight-formatting";
+import {
+  consolidateTimestampGroups,
+  parseNumberedInsightText,
+  splitInsightSentences,
+} from "@/lib/insight-formatting";
+import type { TalkSearchResult } from "@/lib/search/hybrid-retrieval";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 const PAGE_SIZE = 12;
@@ -125,11 +131,11 @@ export const Route = createFileRoute("/")({
       { property: "og:url", content: siteUrl("/") },
       {
         property: "og:image",
-        content: siteUrl("/hero-atlas.webp"),
+        content: siteUrl("/hero-themes-v2.webp"),
       },
       {
         name: "twitter:image",
-        content: siteUrl("/hero-atlas.webp"),
+        content: siteUrl("/hero-themes-v2.webp"),
       },
       {
         "script:ld+json": {
@@ -178,7 +184,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: siteUrl("/") },
-      { rel: "preload", href: "/hero-atlas.webp", as: "image", fetchPriority: "high" },
+      { rel: "preload", href: "/hero-themes-v2.webp", as: "image", fetchPriority: "high" },
     ],
   }),
   component: Dashboard,
@@ -413,10 +419,15 @@ function Dashboard() {
     verifiedAt: "2026-07-30T00:00:00+08:00",
   }));
   const [query, setQuery] = useState("");
+  const [hybridResults, setHybridResults] = useState<TalkSearchResult[] | null>(null);
+  const [retrievalStatus, setRetrievalStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle",
+  );
   const [selectedThemes, setSelectedThemes] = useState<Track[]>([]);
   const [year, setYear] = useState<"All" | number>("All");
   const [open, setOpen] = useState<CatalogVideo | null>(null);
   const lastCardTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const closeSummary = () => {
     setOpen(null);
@@ -448,14 +459,54 @@ function Dashboard() {
     [catalog.records],
   );
 
+  useEffect(() => {
+    const normalized = query.trim();
+    if (!normalized) {
+      setHybridResults(null);
+      setRetrievalStatus("idle");
+      return;
+    }
+    let cancelled = false;
+    setRetrievalStatus("loading");
+    const timer = window.setTimeout(() => {
+      void import("@/lib/search/hybrid-retrieval")
+        .then(({ hybridSearch }) => hybridSearch(normalized))
+        .then((results) => {
+          if (!cancelled) {
+            setHybridResults(results);
+            setRetrievalStatus("ready");
+          }
+        })
+        .catch((error: unknown) => {
+          logClientError("hybrid_retrieval_error", {
+            message: error instanceof Error ? error.message : "Unknown retrieval error",
+          });
+          if (!cancelled) {
+            setHybridResults(null);
+            setRetrievalStatus("error");
+          }
+        });
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query]);
+
+  const hybridByTalk = useMemo(
+    () => new Map((hybridResults ?? []).map((result) => [result.talkId, result])),
+    [hybridResults],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return catalog.records.filter((v) => {
+    const filteredCatalog = catalog.records.filter((v) => {
       const topics = videoThemes(v);
       if (selectedThemes.length && !selectedThemes.some((theme) => topics.includes(theme)))
         return false;
       if (year !== "All" && videoYear(v) !== year) return false;
-      if (!q) return true;
+      if (!q || retrievalStatus === "loading") return true;
+      if (retrievalStatus === "ready") return hybridByTalk.has(v.id);
       return (
         v.title.toLowerCase().includes(q) ||
         v.sourceChannel.toLowerCase().includes(q) ||
@@ -463,7 +514,13 @@ function Dashboard() {
         videoTags(v).some((tag) => atlasTagLabel(tag).includes(q))
       );
     });
-  }, [catalog.records, query, selectedThemes, year]);
+    if (q && retrievalStatus === "ready")
+      return filteredCatalog.sort(
+        (left, right) =>
+          (hybridByTalk.get(right.id)?.score ?? 0) - (hybridByTalk.get(left.id)?.score ?? 0),
+      );
+    return filteredCatalog;
+  }, [catalog.records, hybridByTalk, query, retrievalStatus, selectedThemes, year]);
 
   // Always start at PAGE_SIZE on both server and client to avoid a hydration
   // mismatch — the restored value from sessionStorage is applied in the
@@ -617,259 +674,288 @@ function Dashboard() {
     };
   }, [open]);
 
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      const target = event.target;
+      const isEditable =
+        target instanceof HTMLElement &&
+        (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+
+      if (
+        event.defaultPrevented ||
+        event.key !== "/" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.isComposing ||
+        isEditable
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, []);
+
   return (
     <div className="min-h-screen bg-paper text-ink" onWheel={loadIfNearViewport}>
-      {/* Header */}
-      <header className="mx-auto flex max-w-[1400px] items-center justify-between border-b border-ink/20 px-6 py-5">
-        <a href="#top" className="flex items-center gap-3">
-          <span className="inline-flex h-8 items-center justify-center rounded-md border border-ink px-2 font-mono text-xs font-medium tracking-wider">
-            AI/E
-          </span>
-          <span className="font-display text-sm font-medium tracking-tight">
-            AI Engineering Insights Atlas
-          </span>
-        </a>
-      </header>
+      <AtlasNavigation current="insights" />
 
       <main>
-      {/* HERO */}
-      <section
-        id="top"
-        aria-label="AI Engineering Insight Atlas introduction"
-        className="mx-auto max-w-[1400px] px-6 pt-8"
-      >
-        <div className="crosshair rounded-xl border border-ink/90 bg-paper p-3 shadow-[0_20px_60px_-20px_rgba(20,20,40,0.25)] md:p-5">
-          <picture>
-            <source srcSet="/hero-atlas.webp" type="image/webp" />
-            <img
-              src="/hero-atlas.png"
-              alt="AI Engineering Insight Atlas. Build AI systems that survive reality. Nine illustrated panels represent System Design, Data and Eval, Reliability, Observability, Safety and Control, Deployment, Knowledge, Developer Workflows and Models and Training."
-              width={1731}
-              height={909}
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              className="block h-auto w-full rounded-lg border border-ink/80"
-            />
-          </picture>
-        </div>
-        <div className="mt-6 border-b border-ink/20 pb-10">
-          <h1 className="sr-only">AI Engineering Insight Atlas</h1>
-          <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
-            Explore practical industry insights across nine engineering domains. Transcript
-            extraction is still in progress, so the knowledge layer will mature over time.
-          </p>
-        </div>
-        <div className="mt-5 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
-          Source catalog was checked against YouTube on 30 Jul 2026. All rights belong to the
-          respective owners.
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section aria-labelledby="explore-title" className="mx-auto max-w-[1400px] px-6 pt-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-              Browse the atlas
-            </span>
-            <h2 id="explore-title" className="mt-2 font-display text-2xl md:text-3xl">
-              Find the talk behind the problem.
-            </h2>
+        {/* HERO */}
+        <section
+          id="top"
+          aria-label="AI Engineering Insight Atlas introduction"
+          className="mx-auto max-w-[1400px] px-6 pt-4"
+        >
+          <div className="crosshair grid overflow-hidden rounded-xl border border-ink/90 bg-paper shadow-[0_20px_60px_-20px_rgba(20,20,40,0.25)] md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+            <div className="flex min-h-[220px] items-center border-b border-ink/20 p-8 md:min-h-[310px] md:border-b-0 md:border-r md:p-12 lg:p-16">
+              <h1 className="max-w-[9ch] font-display text-5xl leading-[0.92] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+                AI Engineering Insights
+              </h1>
+            </div>
+            <picture className="block bg-card">
+              <source srcSet="/hero-themes-v2.webp" type="image/webp" />
+              <img
+                src="/hero-themes-v2.png"
+                alt="Nine technical illustrations representing System Design, Data and Eval, Reliability, Observability, Safety and Control, Deployment, Knowledge, Developer Workflows and Models and Training."
+                width={1536}
+                height={1024}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="block h-full min-h-[240px] w-full object-cover md:min-h-[310px]"
+              />
+            </picture>
           </div>
-          <span
-            aria-live="polite"
-            className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
-          >
-            {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")}{" "}
-            results
-          </span>
-        </div>
+          <div className="mt-4 rounded-xl border border-[color:var(--track-4)]/45 bg-card px-4 py-3 font-sans text-sm leading-relaxed text-muted-foreground">
+            Source catalog was checked against YouTube on 4 Aug 2026. All rights belong to the
+            respective owners.
+          </div>
+        </section>
 
-        {/* Search */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <label
-            htmlFor="atlas-search"
-            className="flex flex-1 min-w-[260px] items-center gap-3 rounded-xl border border-ink/20 bg-card px-4 py-3 shadow-[0_8px_24px_-12px_rgba(20,20,40,0.25)] transition-shadow focus-within:shadow-[0_12px_32px_-12px_rgba(20,20,40,0.35)]"
-          >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Search
-            </span>
-            <input
-              id="atlas-search"
-              type="search"
-              placeholder='Try "evals" or "agents" or "RAG"'
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent font-sans text-sm text-ink outline-none placeholder:text-muted-foreground/70"
-            />
-            <kbd className="hidden rounded-md border border-ink/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">
-              /
-            </kbd>
-          </label>
-          <button
-            onClick={() => {
-              setQuery("");
-              setSelectedThemes([]);
-              setYear("All");
-            }}
-            className="rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_8px_24px_-12px_rgba(20,20,40,0.5)] transition-transform hover:-translate-y-[1px]"
-          >
-            Reset
-          </button>
-        </div>
-
-        {/* Track chips */}
-        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filter by theme">
-          <TrackChip
-            label="All themes"
-            active={selectedThemes.length === 0}
-            onClick={() => setSelectedThemes([])}
-          />
-          {TRACKS.map((t) => (
-            <TrackChip
-              key={t.code}
-              label={t.name}
-              active={selectedThemes.includes(t.name)}
-              onClick={() =>
-                setSelectedThemes((current) =>
-                  current.includes(t.name)
-                    ? current.filter((theme) => theme !== t.name)
-                    : [...current, t.name],
-                )
-              }
-            />
-          ))}
-          <label className="ml-auto flex items-center gap-2 rounded-xl border border-ink/20 bg-card px-3 py-2 font-mono text-[11px] uppercase tracking-widest shadow-[0_6px_18px_-12px_rgba(20,20,40,0.25)]">
-            Year
-            <select
-              value={year}
-              onChange={(e) => setYear(e.target.value === "All" ? "All" : Number(e.target.value))}
-              className="bg-transparent font-mono text-[11px] outline-none"
-            >
-              <option value="All">All</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {booting
-            ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
-            : visible.map((v, i) => {
-                const t = TRACKS.find((tr) => tr.name === videoThemes(v)[0]) ?? TRACKS[0]!;
-                const topics = videoThemes(v);
-                const tags = videoTags(v);
-                const eager = i < 3;
-                return (
-                  <button
-                    key={v.id}
-                    type="button"
-                    aria-labelledby={`card-title-${v.id}`}
-                    onClick={(event) => {
-                      lastCardTriggerRef.current = event.currentTarget;
-                      setOpen(v);
-                    }}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper motion-safe:hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
-                  >
-                    <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
-                      <Thumbnail video={v} token={t.token} eager={eager} />
-                      <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
-                        {videoDuration(v)}
-                      </span>
-                    </div>
-                    <div className="flex flex-1 flex-col p-4">
-                      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        <span>Talk</span>
-                        <span>{videoPublishedDate(v)}</span>
-                      </div>
-                      <h3
-                        id={`card-title-${v.id}`}
-                        className="mt-2 font-display text-lg leading-tight"
-                      >
-                        {v.title}
-                      </h3>
-                      <p className="mt-2 font-sans text-sm text-muted-foreground">
-                        YouTube · {v.sourceChannel}
-                      </p>
-                      <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-2 border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
-                        <span className="flex flex-wrap gap-x-3 gap-y-1">
-                          {topics.length ? (
-                            topics.map((topic) => {
-                              return (
-                                <span
-                                  key={topic}
-                                  className="inline-flex items-center gap-1.5 text-ink"
-                                >
-                                  <TrackIcon track={topic} className="h-3.5 w-3.5" />
-                                  {topic}
-                                </span>
-                              );
-                            })
-                          ) : (
-                            <span className="text-muted-foreground">
-                              {tags.map(atlasTagLabel).join(" · ")}
-                            </span>
-                          )}
-                        </span>
-                        <span className="inline-flex items-center gap-1 whitespace-nowrap text-ink group-hover:underline">
-                          <span>Summary</span>
-                          <span aria-hidden="true" className="tracking-normal">
-                            →
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-          {!booting &&
-            hasMore &&
-            Array.from({ length: Math.min(3, filtered.length - visibleCount) }).map((_, i) => (
-              <CardSkeleton key={`sk-more-${i}`} />
-            ))}
-        </div>
-
-        {/* Sentinel — IntersectionObserver reveals the next page when it
-            approaches the viewport. When exhausted, shows an end marker. */}
-        <span className="sr-only" aria-live="polite">
-          {loadAnnouncement}
-        </span>
-        {!booting && hasMore ? (
-          <div
-            ref={sentinelRef}
-            data-testid="atlas-infinite-scroll-sentinel"
-            className="mt-10 flex justify-center pb-24"
-          >
+        {/* Filters */}
+        <section aria-labelledby="explore-title" className="mx-auto max-w-[1400px] px-6 pt-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 id="explore-title" className="font-display text-2xl md:text-3xl">
+                Find the talk behind the problem.
+              </h2>
+            </div>
             <span
-              aria-hidden="true"
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
+              aria-live="polite"
+              className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
             >
-              Loading more talks…
+              {String(visible.length).padStart(2, "0")} / {String(filtered.length).padStart(2, "0")}{" "}
+              results
             </span>
           </div>
-        ) : (
-          !booting &&
-          filtered.length > 0 && (
-            <div className="mt-10 flex justify-center pb-24">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                End of atlas · {filtered.length} talks
+
+          {/* Search */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <label
+              htmlFor="atlas-search"
+              className="flex flex-1 min-w-[260px] items-center gap-3 rounded-xl border border-ink/20 bg-card px-4 py-3 shadow-[0_8px_24px_-12px_rgba(20,20,40,0.25)] transition-shadow focus-within:shadow-[0_12px_32px_-12px_rgba(20,20,40,0.35)]"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Search
+              </span>
+              <input
+                ref={searchInputRef}
+                id="atlas-search"
+                type="search"
+                placeholder='Try "evals" or "agents" or "RAG"'
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="flex-1 bg-transparent font-sans text-sm text-ink outline-none placeholder:text-muted-foreground/70"
+              />
+              <kbd className="hidden rounded-md border border-ink/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">
+                /
+              </kbd>
+            </label>
+            <button
+              onClick={() => {
+                setQuery("");
+                setSelectedThemes([]);
+                setYear("All");
+              }}
+              className="rounded-xl border border-ink bg-ink px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-paper shadow-[0_8px_24px_-12px_rgba(20,20,40,0.5)] transition-transform hover:-translate-y-[1px]"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Track chips */}
+          <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filter by theme">
+            <TrackChip
+              label="All themes"
+              active={selectedThemes.length === 0}
+              onClick={() => setSelectedThemes([])}
+            />
+            {TRACKS.map((t) => (
+              <TrackChip
+                key={t.code}
+                label={t.name}
+                active={selectedThemes.includes(t.name)}
+                onClick={() =>
+                  setSelectedThemes((current) =>
+                    current.includes(t.name)
+                      ? current.filter((theme) => theme !== t.name)
+                      : [...current, t.name],
+                  )
+                }
+              />
+            ))}
+            <label className="ml-auto flex items-center gap-2 rounded-xl border border-ink/20 bg-card px-3 py-2 font-mono text-[11px] uppercase tracking-widest shadow-[0_6px_18px_-12px_rgba(20,20,40,0.25)]">
+              Year
+              <select
+                value={year}
+                onChange={(e) => setYear(e.target.value === "All" ? "All" : Number(e.target.value))}
+                className="bg-transparent font-mono text-[11px] outline-none"
+              >
+                <option value="All">All</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
+          {query.trim() && retrievalStatus === "loading" && (
+            <p
+              className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
+              role="status"
+            >
+              Searching approved insights…
+            </p>
+          )}
+          {query.trim() && retrievalStatus === "error" && (
+            <p
+              className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
+              role="status"
+            >
+              Semantic search unavailable · showing metadata matches
+            </p>
+          )}
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {booting
+              ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
+              : visible.map((v, i) => {
+                  const t = TRACKS.find((tr) => tr.name === videoThemes(v)[0]) ?? TRACKS[0]!;
+                  const topics = videoThemes(v);
+                  const tags = videoTags(v);
+                  const eager = i < 3;
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      aria-labelledby={`card-title-${v.id}`}
+                      onClick={(event) => {
+                        lastCardTriggerRef.current = event.currentTarget;
+                        setOpen(v);
+                      }}
+                      className="group flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-card text-left shadow-[0_10px_30px_-15px_rgba(20,20,40,0.35)] transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper motion-safe:hover:-translate-y-[2px] hover:border-ink/40 hover:shadow-[0_18px_40px_-15px_rgba(20,20,40,0.45)]"
+                    >
+                      <div className="relative aspect-video overflow-hidden border-b border-ink/15 bg-muted">
+                        <Thumbnail video={v} token={t.token} eager={eager} />
+                        <span className="absolute bottom-3 right-3 rounded-md border border-ink bg-ink px-2 py-1 font-mono text-[10px] text-paper shadow-sm">
+                          {videoDuration(v)}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 flex-col p-4">
+                        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                          <span>Talk</span>
+                          <span>{videoPublishedDate(v)}</span>
+                        </div>
+                        <h3
+                          id={`card-title-${v.id}`}
+                          className="mt-2 font-display text-lg leading-tight"
+                        >
+                          {v.title}
+                        </h3>
+                        <p className="mt-2 font-sans text-sm text-muted-foreground">
+                          YouTube · {v.sourceChannel}
+                        </p>
+                        <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-2 border-t border-ink/10 pt-3 font-mono text-[11px] uppercase tracking-widest">
+                          <span className="flex flex-wrap gap-x-3 gap-y-1">
+                            {topics.length ? (
+                              topics.map((topic) => {
+                                return (
+                                  <span
+                                    key={topic}
+                                    className="inline-flex items-center gap-1.5 text-ink"
+                                  >
+                                    <TrackIcon track={topic} className="h-3.5 w-3.5" />
+                                    {topic}
+                                  </span>
+                                );
+                              })
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {tags.map(atlasTagLabel).join(" · ")}
+                              </span>
+                            )}
+                          </span>
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap text-ink group-hover:underline">
+                            <span>Summary</span>
+                            <span aria-hidden="true" className="tracking-normal">
+                              →
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+            {!booting &&
+              hasMore &&
+              Array.from({ length: Math.min(3, filtered.length - visibleCount) }).map((_, i) => (
+                <CardSkeleton key={`sk-more-${i}`} />
+              ))}
+          </div>
+
+          {/* Sentinel — IntersectionObserver reveals the next page when it
+            approaches the viewport. When exhausted, shows an end marker. */}
+          <span className="sr-only" aria-live="polite">
+            {loadAnnouncement}
+          </span>
+          {!booting && hasMore ? (
+            <div
+              ref={sentinelRef}
+              data-testid="atlas-infinite-scroll-sentinel"
+              className="mt-10 flex justify-center pb-24"
+            >
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
+              >
+                Loading more talks…
               </span>
             </div>
-          )
-        )}
+          ) : (
+            !booting &&
+            filtered.length > 0 && (
+              <div className="mt-10 flex justify-center pb-24">
+                <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  End of atlas · {filtered.length} talks
+                </span>
+              </div>
+            )
+          )}
 
-        {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
-            No talks match. Try resetting filters.
-          </div>
-        )}
-      </section>
+          {filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-ink/40 p-12 text-center font-mono text-sm text-muted-foreground">
+              No talks match. Try resetting filters.
+            </div>
+          )}
+        </section>
       </main>
 
       <footer className="border-t border-ink/20">
@@ -881,7 +967,13 @@ function Dashboard() {
         </div>
       </footer>
 
-      {open && <SummaryModal video={open} onClose={closeSummary} />}
+      {open && (
+        <SummaryModal
+          video={open}
+          match={hybridByTalk.get(open.id) ?? null}
+          onClose={closeSummary}
+        />
+      )}
     </div>
   );
 }
@@ -1200,7 +1292,15 @@ function EmbeddedPlayer({ video }: { video: Video }) {
   );
 }
 
-function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => void }) {
+function SummaryModal({
+  video,
+  match,
+  onClose,
+}: {
+  video: CatalogVideo;
+  match: TalkSearchResult | null;
+  onClose: () => void;
+}) {
   const themes = videoThemes(video);
   const tags = videoTags(video);
   const [insight, setInsight] = useState<TalkInsight | null>(() =>
@@ -1293,6 +1393,7 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                         : ""
                     }`}
                     className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
+                    highlightText={match?.matchedField === "claim" ? match.matchedText : undefined}
                   />
                   <div className="mt-5 space-y-5">
                     <ExamplePart
@@ -1300,6 +1401,9 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                       body={insight.implication}
                       divider={false}
                       leadOnly
+                      highlightText={
+                        match?.matchedField === "implication" ? match.matchedText : undefined
+                      }
                     />
                     <ExamplePart
                       label="Use it when"
@@ -1307,6 +1411,9 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                       divider={false}
                       leadOnly
                       hideLead
+                      highlightText={
+                        match?.matchedField === "whenToUse" ? match.matchedText : undefined
+                      }
                     />
                   </div>
                   <div className="mt-5 border-t border-ink/10 pt-4">
@@ -1316,7 +1423,16 @@ function SummaryModal({ video, onClose }: { video: CatalogVideo; onClose: () => 
                     <InsightBody
                       body={insight.caveat}
                       className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground"
+                      highlightText={
+                        match?.matchedField === "caveat" ? match.matchedText : undefined
+                      }
                     />
+                    {match && (
+                      <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Tuning trace · {match.source} · {match.matchedField}{" "}
+                        {match.matchedOrdinal + 1}
+                      </p>
+                    )}
                   </div>
                 </>
               ) : (
@@ -1368,12 +1484,14 @@ function ExamplePart({
   divider = true,
   leadOnly = false,
   hideLead = false,
+  highlightText,
 }: {
   label: string;
   body: string;
   divider?: boolean;
   leadOnly?: boolean;
   hideLead?: boolean;
+  highlightText?: string;
 }) {
   return (
     <div className={divider ? "border-t border-ink/10 pt-3" : "pt-0"}>
@@ -1385,6 +1503,7 @@ function ExamplePart({
         className="mt-1 font-sans text-sm leading-relaxed text-ink"
         leadOnly={leadOnly}
         hideLead={hideLead}
+        highlightText={highlightText}
       />
     </div>
   );
@@ -1395,26 +1514,38 @@ function InsightBody({
   className,
   leadOnly = false,
   hideLead = false,
+  highlightText,
 }: {
   body: string;
   className: string;
   leadOnly?: boolean;
   hideLead?: boolean;
+  highlightText?: string;
 }) {
   const numbered = parseNumberedInsightText(body);
+  const highlighted = (text: string) =>
+    highlightText !== undefined && text.trim().toLowerCase() === highlightText.trim().toLowerCase();
+  const highlightClass = "rounded-md bg-amber-100 px-1.5 py-0.5 box-decoration-clone";
 
   if (numbered.points.length > 1) {
     if (numbered.lead && leadOnly) {
       return (
         <>
-          {!hideLead && <p className={className}>{numbered.lead}</p>}
+          {!hideLead && (
+            <p className={`${className} ${highlighted(numbered.lead) ? highlightClass : ""}`}>
+              {numbered.lead}
+            </p>
+          )}
           <ol
             className={`${className} insight-numbered-list insight-numbered-list--nested space-y-2`}
           >
             {numbered.points.map((point, index) => (
-              <li key={`${index}-${point}`}>
+              <li
+                key={`${index}-${point}`}
+                className={highlighted(point) ? highlightClass : undefined}
+              >
                 <span className="insight-numbered-label">{index + 1}.</span>
-                {capitalizeFirstAlphabet(point)}
+                {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
               </li>
             ))}
           </ol>
@@ -1430,9 +1561,12 @@ function InsightBody({
             {numbered.lead}
             <ol className="insight-numbered-list insight-numbered-list--nested mt-2 space-y-2">
               {numbered.points.map((point, index) => (
-                <li key={`${index}-${point}`}>
+                <li
+                  key={`${index}-${point}`}
+                  className={highlighted(point) ? highlightClass : undefined}
+                >
                   <span className="insight-numbered-label">1.{index + 1}</span>
-                  {capitalizeFirstAlphabet(point)}
+                  {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
                 </li>
               ))}
             </ol>
@@ -1444,9 +1578,9 @@ function InsightBody({
     return (
       <ol className={`${className} insight-numbered-list space-y-2`}>
         {numbered.points.map((point, index) => (
-          <li key={`${index}-${point}`}>
+          <li key={`${index}-${point}`} className={highlighted(point) ? highlightClass : undefined}>
             <span className="insight-numbered-label">{index + 1}.</span>
-            {capitalizeFirstAlphabet(point)}
+            {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
           </li>
         ))}
       </ol>
@@ -1459,7 +1593,7 @@ function InsightBody({
     return (
       <ol className={`${className} insight-numbered-list space-y-2`}>
         {points.map((point, index) => (
-          <li key={`${index}-${point}`}>
+          <li key={`${index}-${point}`} className={highlighted(point) ? highlightClass : undefined}>
             <span className="insight-numbered-label">{index + 1}.</span>
             {capitalizeFirstAlphabet(point)}
           </li>
@@ -1468,7 +1602,7 @@ function InsightBody({
     );
   }
 
-  return <p className={className}>{body}</p>;
+  return <p className={`${className} ${highlighted(body) ? highlightClass : ""}`}>{body}</p>;
 }
 
 function capitalizeFirstAlphabet(text: string): string {

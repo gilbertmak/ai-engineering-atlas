@@ -42,6 +42,8 @@ const TAG_THEMES: Readonly<Record<AtlasTag, Track>> = {
   "product-ux": "System Design",
 };
 
+export const ATLAS_TAGS = Object.freeze(Object.keys(TAG_THEMES) as AtlasTag[]);
+
 const TITLE_THEME_RULES: ReadonlyArray<{ theme: Track; pattern: RegExp }> = [
   {
     theme: "Knowledge",
