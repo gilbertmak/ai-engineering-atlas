@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AtlasNavigation } from "@/components/atlas-navigation";
-import { LAST_KNOWN_GOOD_CATALOG } from "@/lib/atlas-catalog";
+import { loadAtlasCatalog } from "@/lib/atlas-catalog-client";
 import { siteUrl } from "@/lib/site";
 import { catalogTagCounts } from "@/lib/tag-statistics";
-import type { Track } from "@/data/videos";
+import type { Track, Video } from "@/data/videos";
 
 const TRACK_TOKENS: Record<Track, string> = {
   "System Design": "track-1",
@@ -19,6 +19,7 @@ const TRACK_TOKENS: Record<Track, string> = {
 };
 
 export const Route = createFileRoute("/statistics")({
+  ssr: false,
   head: () => ({
     links: [{ rel: "canonical", href: siteUrl("/statistics") }],
     meta: [
@@ -40,7 +41,17 @@ export const Route = createFileRoute("/statistics")({
 });
 
 function StatisticsPage() {
-  const counts = useMemo(() => catalogTagCounts(LAST_KNOWN_GOOD_CATALOG), []);
+  const [catalog, setCatalog] = useState<readonly Video[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void loadAtlasCatalog().then((result) => {
+      if (!cancelled) setCatalog(result.records);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const counts = useMemo(() => catalogTagCounts(catalog), [catalog]);
   const maxCount = counts[0]?.count ?? 1;
   const taggedAssignments = counts.reduce((total, item) => total + item.count, 0);
 
@@ -62,7 +73,7 @@ function StatisticsPage() {
         </section>
 
         <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <Stat label="Catalog videos" value={LAST_KNOWN_GOOD_CATALOG.length} />
+          <Stat label="Catalog videos" value={catalog.length} />
           <Stat label="Controlled tags" value={counts.length} />
           <Stat label="Tag assignments" value={taggedAssignments} />
         </dl>
