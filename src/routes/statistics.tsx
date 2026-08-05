@@ -56,7 +56,7 @@ function StatisticsPage() {
             Videos by tag
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-            Each bar counts videos carrying a controlled Atlas tag. Videos can appear in more than
+            Videos can appear in more than
             one tag, so the bar total is higher than the number of catalog entries.
           </p>
         </section>
