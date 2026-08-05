@@ -26,7 +26,6 @@ import {
   parseNumberedInsightText,
   splitInsightSentences,
 } from "@/lib/insight-formatting";
-import type { TalkSearchResult } from "@/lib/search/hybrid-retrieval";
 
 const SCROLL_KEY = "atlas:scroll-v1";
 const PAGE_SIZE = 12;
@@ -419,10 +418,6 @@ function Dashboard() {
     verifiedAt: "2026-07-30T00:00:00+08:00",
   }));
   const [query, setQuery] = useState("");
-  const [hybridResults, setHybridResults] = useState<TalkSearchResult[] | null>(null);
-  const [retrievalStatus, setRetrievalStatus] = useState<"idle" | "loading" | "ready" | "error">(
-    "idle",
-  );
   const [selectedThemes, setSelectedThemes] = useState<Track[]>([]);
   const [year, setYear] = useState<"All" | number>("All");
   const [open, setOpen] = useState<CatalogVideo | null>(null);
@@ -459,45 +454,6 @@ function Dashboard() {
     [catalog.records],
   );
 
-  useEffect(() => {
-    const normalized = query.trim();
-    if (!normalized) {
-      setHybridResults(null);
-      setRetrievalStatus("idle");
-      return;
-    }
-    let cancelled = false;
-    setRetrievalStatus("loading");
-    const timer = window.setTimeout(() => {
-      void import("@/lib/search/hybrid-retrieval")
-        .then(({ hybridSearch }) => hybridSearch(normalized))
-        .then((results) => {
-          if (!cancelled) {
-            setHybridResults(results);
-            setRetrievalStatus("ready");
-          }
-        })
-        .catch((error: unknown) => {
-          logClientError("hybrid_retrieval_error", {
-            message: error instanceof Error ? error.message : "Unknown retrieval error",
-          });
-          if (!cancelled) {
-            setHybridResults(null);
-            setRetrievalStatus("error");
-          }
-        });
-    }, 250);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [query]);
-
-  const hybridByTalk = useMemo(
-    () => new Map((hybridResults ?? []).map((result) => [result.talkId, result])),
-    [hybridResults],
-  );
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filteredCatalog = catalog.records.filter((v) => {
@@ -505,8 +461,7 @@ function Dashboard() {
       if (selectedThemes.length && !selectedThemes.some((theme) => topics.includes(theme)))
         return false;
       if (year !== "All" && videoYear(v) !== year) return false;
-      if (!q || retrievalStatus === "loading") return true;
-      if (retrievalStatus === "ready") return hybridByTalk.has(v.id);
+      if (!q) return true;
       return (
         v.title.toLowerCase().includes(q) ||
         v.sourceChannel.toLowerCase().includes(q) ||
@@ -514,13 +469,8 @@ function Dashboard() {
         videoTags(v).some((tag) => atlasTagLabel(tag).includes(q))
       );
     });
-    if (q && retrievalStatus === "ready")
-      return filteredCatalog.sort(
-        (left, right) =>
-          (hybridByTalk.get(right.id)?.score ?? 0) - (hybridByTalk.get(left.id)?.score ?? 0),
-      );
     return filteredCatalog;
-  }, [catalog.records, hybridByTalk, query, retrievalStatus, selectedThemes, year]);
+  }, [catalog.records, query, selectedThemes, year]);
 
   // Always start at PAGE_SIZE on both server and client to avoid a hydration
   // mismatch — the restored value from sessionStorage is applied in the
@@ -828,22 +778,6 @@ function Dashboard() {
           </div>
 
           {/* Grid — only `visible` slice is mounted; sentinel below reveals more */}
-          {query.trim() && retrievalStatus === "loading" && (
-            <p
-              className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
-              role="status"
-            >
-              Searching approved insights…
-            </p>
-          )}
-          {query.trim() && retrievalStatus === "error" && (
-            <p
-              className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
-              role="status"
-            >
-              Semantic search unavailable · showing metadata matches
-            </p>
-          )}
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {booting
               ? Array.from({ length: PAGE_SIZE }).map((_, i) => <CardSkeleton key={`sk-${i}`} />)
@@ -968,11 +902,7 @@ function Dashboard() {
       </footer>
 
       {open && (
-        <SummaryModal
-          video={open}
-          match={hybridByTalk.get(open.id) ?? null}
-          onClose={closeSummary}
-        />
+        <SummaryModal video={open} onClose={closeSummary} />
       )}
     </div>
   );
@@ -1294,11 +1224,9 @@ function EmbeddedPlayer({ video }: { video: Video }) {
 
 function SummaryModal({
   video,
-  match,
   onClose,
 }: {
   video: CatalogVideo;
-  match: TalkSearchResult | null;
   onClose: () => void;
 }) {
   const themes = videoThemes(video);
@@ -1393,7 +1321,6 @@ function SummaryModal({
                         : ""
                     }`}
                     className="mt-3 font-sans text-[15px] leading-relaxed text-ink"
-                    highlightText={match?.matchedField === "claim" ? match.matchedText : undefined}
                   />
                   <div className="mt-5 space-y-5">
                     <ExamplePart
@@ -1401,9 +1328,6 @@ function SummaryModal({
                       body={insight.implication}
                       divider={false}
                       leadOnly
-                      highlightText={
-                        match?.matchedField === "implication" ? match.matchedText : undefined
-                      }
                     />
                     <ExamplePart
                       label="Use it when"
@@ -1411,9 +1335,6 @@ function SummaryModal({
                       divider={false}
                       leadOnly
                       hideLead
-                      highlightText={
-                        match?.matchedField === "whenToUse" ? match.matchedText : undefined
-                      }
                     />
                   </div>
                   <div className="mt-5 border-t border-ink/10 pt-4">
@@ -1423,16 +1344,7 @@ function SummaryModal({
                     <InsightBody
                       body={insight.caveat}
                       className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground"
-                      highlightText={
-                        match?.matchedField === "caveat" ? match.matchedText : undefined
-                      }
                     />
-                    {match && (
-                      <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        Tuning trace · {match.source} · {match.matchedField}{" "}
-                        {match.matchedOrdinal + 1}
-                      </p>
-                    )}
                   </div>
                 </>
               ) : (
@@ -1484,14 +1396,12 @@ function ExamplePart({
   divider = true,
   leadOnly = false,
   hideLead = false,
-  highlightText,
 }: {
   label: string;
   body: string;
   divider?: boolean;
   leadOnly?: boolean;
   hideLead?: boolean;
-  highlightText?: string;
 }) {
   return (
     <div className={divider ? "border-t border-ink/10 pt-3" : "pt-0"}>
@@ -1503,7 +1413,6 @@ function ExamplePart({
         className="mt-1 font-sans text-sm leading-relaxed text-ink"
         leadOnly={leadOnly}
         hideLead={hideLead}
-        highlightText={highlightText}
       />
     </div>
   );
@@ -1514,36 +1423,24 @@ function InsightBody({
   className,
   leadOnly = false,
   hideLead = false,
-  highlightText,
 }: {
   body: string;
   className: string;
   leadOnly?: boolean;
   hideLead?: boolean;
-  highlightText?: string;
 }) {
   const numbered = parseNumberedInsightText(body);
-  const highlighted = (text: string) =>
-    highlightText !== undefined && text.trim().toLowerCase() === highlightText.trim().toLowerCase();
-  const highlightClass = "rounded-md bg-amber-100 px-1.5 py-0.5 box-decoration-clone";
 
   if (numbered.points.length > 1) {
     if (numbered.lead && leadOnly) {
       return (
         <>
-          {!hideLead && (
-            <p className={`${className} ${highlighted(numbered.lead) ? highlightClass : ""}`}>
-              {numbered.lead}
-            </p>
-          )}
+          {!hideLead && <p className={className}>{numbered.lead}</p>}
           <ol
             className={`${className} insight-numbered-list insight-numbered-list--nested space-y-2`}
           >
             {numbered.points.map((point, index) => (
-              <li
-                key={`${index}-${point}`}
-                className={highlighted(point) ? highlightClass : undefined}
-              >
+              <li key={`${index}-${point}`}>
                 <span className="insight-numbered-label">{index + 1}.</span>
                 {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
               </li>
@@ -1561,10 +1458,7 @@ function InsightBody({
             {numbered.lead}
             <ol className="insight-numbered-list insight-numbered-list--nested mt-2 space-y-2">
               {numbered.points.map((point, index) => (
-                <li
-                  key={`${index}-${point}`}
-                  className={highlighted(point) ? highlightClass : undefined}
-                >
+                <li key={`${index}-${point}`}>
                   <span className="insight-numbered-label">1.{index + 1}</span>
                   {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
                 </li>
@@ -1578,7 +1472,7 @@ function InsightBody({
     return (
       <ol className={`${className} insight-numbered-list space-y-2`}>
         {numbered.points.map((point, index) => (
-          <li key={`${index}-${point}`} className={highlighted(point) ? highlightClass : undefined}>
+          <li key={`${index}-${point}`}>
             <span className="insight-numbered-label">{index + 1}.</span>
             {capitalizeFirstAlphabet(index === 1 ? consolidateTimestampGroups(point) : point)}
           </li>
@@ -1593,7 +1487,7 @@ function InsightBody({
     return (
       <ol className={`${className} insight-numbered-list space-y-2`}>
         {points.map((point, index) => (
-          <li key={`${index}-${point}`} className={highlighted(point) ? highlightClass : undefined}>
+          <li key={`${index}-${point}`}>
             <span className="insight-numbered-label">{index + 1}.</span>
             {capitalizeFirstAlphabet(point)}
           </li>
@@ -1602,7 +1496,7 @@ function InsightBody({
     );
   }
 
-  return <p className={`${className} ${highlighted(body) ? highlightClass : ""}`}>{body}</p>;
+  return <p className={className}>{body}</p>;
 }
 
 function capitalizeFirstAlphabet(text: string): string {

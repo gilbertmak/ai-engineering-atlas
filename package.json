@@ -10,15 +10,12 @@
     "preview": "wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-07-08",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "retrieval:index": "bun scripts/generate-retrieval-index.ts",
-    "retrieval:eval": "bun evals/run-hybrid-retrieval.ts",
     "verify:sources": "bun scripts/verify-video-sources.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
-    "@huggingface/transformers": "^4.2.0",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/mcp-js": "^0.25.0",
     "@radix-ui/react-accordion": "^1.2.16",
