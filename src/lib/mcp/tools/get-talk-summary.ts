@@ -3,8 +3,7 @@ import { z } from "zod";
 
 import { withAudit } from "../audit";
 
-import { talkInsightForVideo } from "../../../data/talk-insights";
-import { LAST_KNOWN_GOOD_CATALOG } from "../../atlas-catalog";
+import { loadPublicCatalog, loadPublicInsights } from "../public-projections";
 import { serializeVideo } from "./search-talks";
 
 export default defineTool({
@@ -16,9 +15,10 @@ export default defineTool({
     id: z.string().describe("Talk id (e.g. v21), catalog code (e.g. aie-021), or YouTube video id."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: withAudit("get_talk_summary", ({ id }) => {
+  handler: withAudit("get_talk_summary", async ({ id }) => {
     const key = id.trim().toLowerCase();
-    const video = LAST_KNOWN_GOOD_CATALOG.find(
+    const { records } = await loadPublicCatalog();
+    const video = records.find(
       (item) =>
         item.id.toLowerCase() === key ||
         item.code.toLowerCase() === key ||
@@ -32,8 +32,11 @@ export default defineTool({
       };
     }
 
+    const { records: insights } = await loadPublicInsights();
     const reviewedInsight =
-      video.insightReviewStatus === "approved" ? talkInsightForVideo(video) : undefined;
+      video.insightReviewStatus === "approved"
+        ? (insights[video.id] ?? insights[`youtube-${video.youtubeId}`])
+        : undefined;
     const payload = {
       talk: serializeVideo(video),
       summary:

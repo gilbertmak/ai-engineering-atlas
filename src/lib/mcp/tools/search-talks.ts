@@ -3,13 +3,28 @@ import { z } from "zod";
 
 import { withAudit } from "../audit";
 
-import { TRACKS, videoDuration, videoTags, videoThemes, videoYear } from "../../../data/videos";
-import { atlasTagLabel } from "../../../data/catalog-taxonomy";
-import { LAST_KNOWN_GOOD_CATALOG } from "../../atlas-catalog";
+import {
+  loadPublicCatalog,
+  videoDuration,
+  videoTags,
+  videoThemes,
+  videoYear,
+  type PublicCatalogVideo,
+} from "../public-projections";
 
-export const TRACK_NAMES = TRACKS.map((track) => track.name);
+export const TRACK_NAMES = [
+  "System Design",
+  "Data & Eval",
+  "Reliability",
+  "Observability",
+  "Safety & Control",
+  "Deployment",
+  "Knowledge",
+  "Developer Workflows",
+  "Models & Training",
+];
 
-export function serializeVideo(video: (typeof LAST_KNOWN_GOOD_CATALOG)[number]) {
+export function serializeVideo(video: PublicCatalogVideo) {
   return {
     id: video.id,
     code: video.code,
@@ -43,14 +58,15 @@ export default defineTool({
     limit: z.number().int().optional().describe("Maximum number of results (default 20)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: withAudit("search_talks", ({ query, track, year, limit }) => {
+  handler: withAudit("search_talks", async ({ query, track, year, limit }) => {
     const needle = query?.trim().toLowerCase() ?? "";
-    const matches = LAST_KNOWN_GOOD_CATALOG.filter((video) => {
+    const { records } = await loadPublicCatalog();
+    const matches = records.filter((video) => {
       if (track && !videoThemes(video).some((theme) => theme.toLowerCase() === track.toLowerCase()))
         return false;
       if (year && videoYear(video) !== year) return false;
       if (!needle) return true;
-      return `${video.title} ${video.sourceChannel} ${videoThemes(video).join(" ")} ${videoTags(video).map(atlasTagLabel).join(" ")} ${video.code}`
+      return `${video.title} ${video.sourceChannel} ${videoThemes(video).join(" ")} ${videoTags(video).join(" ")} ${video.code}`
         .toLowerCase()
         .includes(needle);
     }).slice(0, Math.max(1, Math.min(limit ?? 20, 50)));
