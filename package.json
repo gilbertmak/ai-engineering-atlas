@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/configure-wrangler-observability.mjs",
     "build:dev": "vite build --mode development",
     "preview": "wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-07-08",
     "test": "bun test",
