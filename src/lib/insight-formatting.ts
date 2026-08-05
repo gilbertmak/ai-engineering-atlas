@@ -38,6 +38,30 @@ export function parseNumberedInsightText(body: string): NumberedInsightText {
   return { lead, points };
 }
 
+const TIMESTAMP_GROUP = /\((?:\d{1,2}:)?\d{1,2}:\d{2}(?:\s*,\s*(?:\d{1,2}:)?\d{1,2}:\d{2})*\)/g;
+const TIMESTAMP = /(?:\d{1,2}:)?\d{1,2}:\d{2}/g;
+
+/**
+ * Keeps the second editorial point to one final timestamp group. Older copy
+ * sometimes accumulated two parenthesised citations as it was revised, which
+ * makes the modal look like two separate asides. The timestamps remain intact
+ * but are presented together once.
+ */
+export function consolidateTimestampGroups(point: string): string {
+  const groups = point.match(TIMESTAMP_GROUP) ?? [];
+  if (groups.length <= 1) return point;
+
+  const timestamps = [...new Set(groups.flatMap((group) => group.match(TIMESTAMP) ?? []))];
+  const text = point
+    .replace(TIMESTAMP_GROUP, "")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    .replace(/[.]$/, "");
+
+  return `${text} (${timestamps.join(", ")}).`;
+}
+
 export function splitInsightSentences(body: string): string[] {
   return body
     .split(/(?<=[.!?])\s+(?=[A-Z])/)

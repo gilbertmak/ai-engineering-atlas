@@ -19,7 +19,7 @@ describe("verified video catalog", () => {
   });
 
   test("adds metadata-derived themes and tags without replacing reviewed themes", () => {
-    expect(LAST_KNOWN_GOOD_CATALOG).toHaveLength(984);
+    expect(LAST_KNOWN_GOOD_CATALOG).toHaveLength(989);
     expect(LAST_KNOWN_GOOD_CATALOG.some((video) => videoThemes(video).includes("Knowledge"))).toBe(
       true,
     );
